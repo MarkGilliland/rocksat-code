@@ -1,12 +1,12 @@
 /*
 
-******************************************************************************************************
+************************************************************************************************
 
 
 ROCKSAT-X COLORADO SCHOOL OF MINES 2020 - GROUND DATA RECEPTION
  
 
-******************************************************************************************************
+************************************************************************************************
 
 
 Base Code is Copyright of the author Stuart Robinson
@@ -27,7 +27,7 @@ the explicit permission of the author Stuart Robinson.
 
 
 
-******************************************************************************************************
+************************************************************************************************
 
 
 Edits completed by Niklas Geschwentner, 2019-2020 Colorado School of Mines. 
@@ -50,23 +50,7 @@ modified Yagi-Uda antenna design, with FLRC protocol.
 
 
 
-******************************************************************************************************
-
-
-
-Receives Fast Long Range Communications (FLRC) mode packets according to the LoRa parameters in the flrcRX.h file. 
-
-Results, RSSI, SNR, errors etc are displayed in the Arduino IDE serial monitor. The LED will flash when a packet is received,
- 
-you can add and enable a buzzer too. Used together with matching TX program. According to the SX1280 data sheet for LoRa at SF5 
-
-and bandwidth 1625khz, the effective data rate is 203kbps with a sensitivity of -99dBm. For FLRC mode at a bit rate of 1.3Mbps
- 
-and bandwidth of 1.2Mhz the effective data rate is 975kbps at the same sensitivity (-99dBm) as 203kbps LoRa.
-
-
-
-******************************************************************************************************
+************************************************************************************************
 
 */
 
@@ -86,7 +70,7 @@ and bandwidth of 1.2Mhz the effective data rate is 975kbps at the same sensitivi
 /*
 
 
-************************************* FLRC Definitions ***************************************
+********************************** FLRC Definitions ***************************************
 
 //FLRC bandwidth and bit rate
 #define FLRC_BR_1_300_BW_1_2 0x45   //1.3Mbs  
@@ -125,7 +109,7 @@ and bandwidth of 1.2Mhz the effective data rate is 975kbps at the same sensitivi
 
 
 
-/************************************* FLRC Modem Parameters ***************************************/
+/******************************** FLRC Modem Parameters ***********************************/
 
 
 
@@ -161,21 +145,44 @@ and bandwidth of 1.2Mhz the effective data rate is 975kbps at the same sensitivi
 
 
 
-/************************************* Include SX1280 ***************************************/
+/************************************* Include SX1280 **************************************/
 
 #include <SX1280LT.h>
 
-
-
-
+import processing.serial.*;
 
 SX1280Class SX1280LT;
 
+Serial port;
 
 
+String trimmed; // String to save the trimmed input
+
+byte[] byteBuffer = new byte[240]; // Buffer to save data incoming from Serial port
+
+int x, y, mcuX, mcuY; // The coordinate variables
+
+long startTime; // A variable to measure how long it takes to receive the image
+
+long currentTime; // A variable to save the current time
+
+boolean received = false; // Flag to signal end of transmission
+
+boolean headerRead = false; // Flag to signal reception of header packet
+
+int inColor, r, g, b; // The color of the current pixel
+
+int jpegWidth, jpegHeight, jpegMCUSPerRow, jpegMCUSPerCol, mcuWidth, mcuHeight, mcuPixels; // Image information variables
 
 
-void loop(){
+void loop()
+
+{
+  
+    // Nothing here
+    
+    // We don't need to receive the same images over and over again
+
 }
 
 
@@ -208,74 +215,44 @@ void setup_FLRC()
 
 
 
-
-
 void setup(void)
 
 {
 
-
-
   Serial.begin(Serial_Monitor_Baud);
-
-  Serial.println();
-
-
-
-  Serial.println();
-
-  Serial.print(F(__TIME__));
-
-  Serial.print(F(" "));
-
-  Serial.println(F(__DATE__));
-
-  Serial.println(F(programversion));
-
-  Serial.println();
-
-  Serial.println();
-
-  Serial.println(F("13_SX1280LT_FLRC_Simple_RX Starting"));
-
-  Serial.println();
-
-
 
   SPI.begin();
 
-  SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
-
-
-
-  if (SX1280LT.begin(NSS, NRESET, RFBUSY, DIO1, DIO2, DIO3))
-
-  {
-
-    Serial.println(F("Device found"));
-
-    delay(1000);
-
-  }
-
-  else
-
-  {
-
-    Serial.println(F("No device responding"));
-
-  }
-
-
+  SPI.setBitOrder(MSBFIRST);           
+  
+  SPI.setClockDivider(4000000);  
+  
+  SPI.setDataMode(SPI_MODE0);
 
   setup_FLRC();
+  
 
+  /* Setup the Window to Display */
 
+  size(200, 200); // Set the default window size to 200 by 200 pixels
+  
+  background(#888888); // Set the background to grey
+  
+  frameRate(1000000); // Set as high frame rate as we can
+  
+  port = new Serial(this, "COM30", 115200); // Start the COM port communication, replace "COM30" with the Arduino COM port number
+  
+  port.buffer(240); // Read 240 bytes at a time
+  
 
-  Serial.print(F("Receiver ready - RXBUFFER_SIZE "));
+  digitalWrite(_NSS, HIGH); //bring the CS or NSS high, standard SPI needs a high to low transition to start communication
 
-  Serial.println(RXBUFFER_SIZE);
+  if (digitalRead (!RFBUSY))  { //if RFBUSY is low, then call the spi function
 
-  Serial.println();
+    
+    
+  }
+
 
 }
+ 
