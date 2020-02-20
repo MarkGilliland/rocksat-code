@@ -1,36 +1,39 @@
 // Boom Control Board code - Initial
 // Drives camera boom, drives telemetry boom, reads camera boom encoder
 // and both boom's limit switches.  
-// limitSwitch1 = retracted camera boom, limitSwitch2 = extended camera boom
-// limitSwitch2 = retracted telemetry boom, limitSwitch3 = extended telemetry boom
+// LIMIT_SWITCH_1 = retracted camera boom, LIMIT_SWITCH_2 = extended camera boom
+// LIMIT_SWITCH_2 = retracted telemetry boom, LIMIT_SWITCH_3 = extended telemetry boom
 // Current execution time is ~6ms per loop
 // At least with DFRobot motor, encoder counts are negative for CW and positive for CCW rotation.
 // Telemetry boom leadscrew is 2mm/1 rotation or 0.0787 inches per rotation
 // Camera boom pulley system equates to ________.
 #include <Wire.h>
-#include <Encoder.h>
+#include <Encoder.h>//needed from an online library
 
 //Constants and global variables.
+//Define motor direction states
 #define CW 0
 #define CCW 1
-#define enc1 2
-#define enc2 9
-#define limitSwitch1 4
-#define limitSwitch2 5
-#define limitSwitch3 6
-#define limitSwitch4 7
-#define motorsEn 10 
-#define motor1CCW A0
-#define motor1CW A1
-#define motor2CCW A2
-#define motor2CW A3
+//define pins
+#define ENCODER_1_PIN 2
+#define ENCODER_2_PIN 9
+#define LIMIT_SWITCH_1 4
+#define LIMIT_SWITCH_2 5
+#define LIMIT_SWITCH_3 6
+#define LIMIT_SWITCH_4 7
+#define MOTORS_ENABLE_PIN 10 
+#define MOTOR_1_PIN_A A0
+#define MOTOR_1_PIN_B A1
+#define MOTOR_2_PIN_A A2
+#define MOTOR_2_PIN_B A3
+//define global variables used in the program
 long encoderCounts = 0;
 long cameraRotations = 0;
 long cameraPosition = 0;
 long telemetryRotations = 0;
 long telemetryPosition = 0;
 
-Encoder myEnc(enc1, enc2);
+Encoder myEnc(ENCODER_1_PIN, ENCODER_2_PIN);
 
 bool receiveCommand(){
   byte currentCommand = 0; //Initialize variable that will temporarily hold command
@@ -59,39 +62,39 @@ void setup() {
   Wire.onReceive(receiveCommand); 
   
   // Setup motor driver pins
-  pinMode(motorsEn, OUTPUT);
-  pinMode(motor1CCW, OUTPUT);
-  pinMode(motor1CW, OUTPUT);
-  pinMode(motor2CCW, OUTPUT);
-  pinMode(motor2CW, OUTPUT);
+  pinMode(MOTORS_ENABLE_PIN, OUTPUT);
+  pinMode(MOTOR_1_PIN_A, OUTPUT);
+  pinMode(MOTOR_1_PIN_B, OUTPUT);
+  pinMode(MOTOR_2_PIN_A, OUTPUT);
+  pinMode(MOTOR_2_PIN_B, OUTPUT);
   // Setup input pins
-  pinMode(limitSwitch1, INPUT);
-  pinMode(limitSwitch2, INPUT);
-  pinMode(limitSwitch3, INPUT);
-  pinMode(limitSwitch4, INPUT);
-  pinMode(enc1, INPUT);
-  pinMode(enc2, INPUT);
+  pinMode(LIMIT_SWITCH_1, INPUT);
+  pinMode(LIMIT_SWITCH_2, INPUT);
+  pinMode(LIMIT_SWITCH_3, INPUT);
+  pinMode(LIMIT_SWITCH_4, INPUT);
+  pinMode(ENCODER_1_PIN, INPUT);
+  pinMode(ENCODER_2_PIN, INPUT);
  
   // Test for motor function
-  digitalWrite(motorsEn, HIGH);
-  digitalWrite(motor1CCW, LOW);
-  digitalWrite(motor1CW, HIGH);
-  digitalWrite(motor2CCW, LOW);
-  digitalWrite(motor2CW, LOW);
+  digitalWrite(MOTORS_ENABLE_PIN, HIGH);
+  digitalWrite(MOTOR_1_PIN_A, LOW);
+  digitalWrite(MOTOR_1_PIN_B, HIGH);
+  digitalWrite(MOTOR_2_PIN_A, LOW);
+  digitalWrite(MOTOR_2_PIN_B, LOW);
 }
 
 void loop() {
   
   // Check if extenstion limit switches have been pressed, if so, turn off respective motor
   // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
-  if(digitalRead(limitSwitch2) == HIGH || digitalRead(limitSwitch1) == HIGH || myEnc.read() < -20000){
-    digitalWrite(motor1CCW, LOW);
-    digitalWrite(motor1CW, LOW);
+  if(digitalRead(LIMIT_SWITCH_2) == HIGH || digitalRead(LIMIT_SWITCH_1) == HIGH || myEnc.read() < -20000){
+    digitalWrite(MOTOR_1_PIN_A, LOW);
+    digitalWrite(MOTOR_1_PIN_B, LOW);
   }
   // If telemetry boom is either fully retracted or extended, stop the telemetry boom motor. 
-  if(digitalRead(limitSwitch4) == HIGH || digitalRead(limitSwitch3) == HIGH){
-    digitalWrite(motor2CCW, LOW);
-    digitalWrite(motor2CW, LOW);
+  if(digitalRead(LIMIT_SWITCH_4) == HIGH || digitalRead(LIMIT_SWITCH_3) == HIGH){
+    digitalWrite(MOTOR_2_PIN_A, LOW);
+    digitalWrite(MOTOR_2_PIN_B, LOW);
   }
   Serial.println(millis());
   
