@@ -32,7 +32,8 @@
 Stepper launcherStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);
 
 int debrisLauncherDegrees = 0;
-int debrisLaunched = 0;
+int mosfetState = MOSFET_OFF;//keep track of the state of the mosfet
+#define RELEASE_MOSFET_PIN MOSFET_1_PIN//redefine  where our debris release mosfet is
 
 //Define function that is run whenever the Arduino receives a command from the master
 bool receiveCommand(){
@@ -52,9 +53,8 @@ bool receiveCommand(){
 void setup() {
   // Start serial for debugging, comment out for production software
   Serial.begin(9600);
-  //give the user an intro
-  Serial.begin("Debris launcher. Press any key to start launching debris");
-  
+  Serial.println("Press any key to turn MOSFET on");
+
   // Start I2C for communication to master
   // Join I2C bus as a slave with address 0x02 for Static board, 0x03 for laser board,
   // 0x04 for 
@@ -80,9 +80,8 @@ void setup() {
   digitalWrite(MOSFET_2_PIN, MOSFET_OFF); 
 
   //Init the stepper object with an initial speed
-  myStepper.setSpeed(MAX_STEPPER_SPEED);  
+  myStepper.setSpeed(MAX_STEPPER_SPEED);
 }
-
 
 void loop() {
   //wait for a serial char to come in
@@ -92,9 +91,14 @@ void loop() {
   while(Serial.available()){
     Serial.read()//remove all chars to empty serial buffer
   }
-  //actually launch debris
-  debrisLaunch++;
-  Serial.println(debrisLaunch);
-  myStepper.step(debrisLaunched*STEPS_PER_LAUNCH);
-  Serial.println("Press any key to launch again");  
+  //actually activate MOSFET
+  if(mosfetState == MOSFET_ON){
+    digitalWrite(RELEASE_MOSFET_PIN, MOSFET_OFF);
+    Serial.println("Press any key to turn MOSFET on");
+  }else{//if MOSFET_OFF
+    digitalWrite(RELEASE_MOSFET_PIN, MOSFET_ON);
+    Serial.println("Press any key to turn MOSFET off");
+  }
+  
+  
 }
