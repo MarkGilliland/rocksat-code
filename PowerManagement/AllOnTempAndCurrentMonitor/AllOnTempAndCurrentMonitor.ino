@@ -106,7 +106,9 @@ void loop() {
   digitalWrite(LED_PIN, HIGH);
   delay(1000);
   #endif
-
+  Serial.println("-------------------------");//new set of data divider
+  Serial.print("Timestamp: ");
+  Serial.println(millis()/1000.0);
   //Monitor current and display it
   for(uint8_t i = 0; i < 8; i++){
     digitalWrite(MUX_SEL_C, i >> 2);
@@ -116,9 +118,7 @@ void loop() {
     int ainRaw1 = analogRead(MUX_AIN_1);
     int ainRaw2 = analogRead(MUX_AIN_2);
     //if a current reading, display current
-    Serial.println("-------------------------");//new set of data divider
-    Serial.print("Timestamp: ");
-    Serial.println(millis()/1000.0);
+    
     if(i != 5 && i != 7){
       Serial.print(i);
       Serial.print(": ");
