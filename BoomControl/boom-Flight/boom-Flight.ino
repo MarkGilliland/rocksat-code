@@ -31,6 +31,7 @@
 //define mechanical constants
 #define REQUIRED_CAM_EXT_TIME 46000   //May need to be more than this
 #define REQUIRED_TELEM_EXT_TIME 7666  //Should be about right
+#define AUTONOMOUS_MODE_ENABLE 0
 
 //define global variables used in the program
 long encoderCounts = 0;
@@ -42,10 +43,13 @@ long camExtensionTime = 0;
 long telemExtensionTime = 0;
 long camRetractionTime = 0;
 long telemRetractionTime = 0;
+long flightTime = 0;
+bool commsBoomExtended = false;
+bool camBoomExtended = false;
 
 Encoder myEnc(ENCODER_1_PIN, ENCODER_2_PIN);
 
-bool receiveCommand(){
+void receiveCommand(){
   int currentCommand = 0; //Initialize variable that will temporarily hold command
   while(Wire.available() > 0){
     currentCommand = Wire.read();
@@ -111,26 +115,70 @@ void setup() {
 
 void loop() {
   
-  // Check if extenstion limit switches have been pressed, if so, turn off respective motor
-  // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
-  if(digitalRead(LIMIT_SWITCH_2) == HIGH || digitalRead(LIMIT_SWITCH_1) == HIGH || myEnc.read() < -20000){
-    digitalWrite(MOTOR_1_PIN_A, LOW);
-    digitalWrite(MOTOR_1_PIN_B, LOW);
+  if(AUTONOMOUS_MODE_ENABLE == 0){
+    // Check if extenstion limit switches have been pressed, if so, turn off respective motor
+    // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
+    if(digitalRead(LIMIT_SWITCH_2) == HIGH || digitalRead(LIMIT_SWITCH_1) == HIGH || myEnc.read() < -20000){
+      digitalWrite(MOTOR_1_PIN_A, LOW);
+      digitalWrite(MOTOR_1_PIN_B, LOW);
+    }
+    // If telemetry boom is either fully retracted or extended, stop the telemetry boom motor. 
+    if(digitalRead(LIMIT_SWITCH_4) == HIGH || digitalRead(LIMIT_SWITCH_3) == HIGH){
+      digitalWrite(MOTOR_2_PIN_A, LOW);
+      digitalWrite(MOTOR_2_PIN_B, LOW);
+    }
+    // If the sufficient amount of time to extend the camera boom has passed, turn off the boom motor
+    if((millis() > (camExtensionTime + REQUIRED_CAM_EXT_TIME)) || (millis() > (camRetractionTime + REQUIRED_CAM_EXT_TIME))){
+      digitalWrite(MOTOR_1_PIN_A, LOW);
+      digitalWrite(MOTOR_1_PIN_B, LOW);  
+    }
+    //If the sufficient amount of time to extend the telemetry boom has passed, turn off the boom motor
+    if((millis() > (telemExtensionTime + REQUIRED_TELEM_EXT_TIME)) || (millis() > (telemRetractionTime + REQUIRED_TELEM_EXT_TIME))){
+      digitalWrite(MOTOR_2_PIN_A, LOW);
+      digitalWrite(MOTOR_2_PIN_B, LOW);
+    }
   }
-  // If telemetry boom is either fully retracted or extended, stop the telemetry boom motor. 
-  if(digitalRead(LIMIT_SWITCH_4) == HIGH || digitalRead(LIMIT_SWITCH_3) == HIGH){
-    digitalWrite(MOTOR_2_PIN_A, LOW);
-    digitalWrite(MOTOR_2_PIN_B, LOW);
-  }
-  // If the sufficient amount of time to extend the camera boom has passed, turn off the boom motor
-  if((millis() > (camExtensionTime + REQUIRED_CAM_EXT_TIME)) || (millis() > (camRetractionTime + REQUIRED_CAM_EXT_TIME))){
-    digitalWrite(MOTOR_1_PIN_A, LOW);
-    digitalWrite(MOTOR_1_PIN_B, LOW);  
-  }
-  //If the sufficient amount of time to extend the telemetry boom has passed, turn off the boom motor
-  if((millis() > (telemExtensionTime + REQUIRED_TELEM_EXT_TIME)) || (millis() > (telemRetractionTime + REQUIRED_TELEM_EXT_TIME))){
-    digitalWrite(MOTOR_2_PIN_A, LOW);
-    digitalWrite(MOTOR_2_PIN_B, LOW);
+  else if (AUTONOMOUS_MODE_ENABLE == 1){
+    while(millis() < 85000){
+      //Do nothing until T+85s
+    }
+    //Begin boom extension
+    extendCommsBoom();
+    extendCamBoom();
+    while((commsBoomExtended && camBoomExtended) == false){
+      // Check if extenstion limit switches have been pressed, if so, turn off respective motor
+      // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
+      if(digitalRead(LIMIT_SWITCH_2) == HIGH || digitalRead(LIMIT_SWITCH_1) == HIGH || myEnc.read() < -20000){
+        digitalWrite(MOTOR_1_PIN_A, LOW);
+        digitalWrite(MOTOR_1_PIN_B, LOW);
+      }
+      // If telemetry boom is either fully retracted or extended, stop the telemetry boom motor. 
+      if(digitalRead(LIMIT_SWITCH_4) == HIGH || digitalRead(LIMIT_SWITCH_3) == HIGH){
+        digitalWrite(MOTOR_2_PIN_A, LOW);
+        digitalWrite(MOTOR_2_PIN_B, LOW);
+      }
+      // If the sufficient amount of time to extend the camera boom has passed, turn off the boom motor
+      if((millis() > (camExtensionTime + REQUIRED_CAM_EXT_TIME)) || (millis() > (camRetractionTime + REQUIRED_CAM_EXT_TIME))){
+        digitalWrite(MOTOR_1_PIN_A, LOW);
+        digitalWrite(MOTOR_1_PIN_B, LOW);  
+      }
+      //If the sufficient amount of time to extend the telemetry boom has passed, turn off the boom motor
+      if((millis() > (telemExtensionTime + REQUIRED_TELEM_EXT_TIME)) || (millis() > (telemRetractionTime + REQUIRED_TELEM_EXT_TIME))){
+        digitalWrite(MOTOR_2_PIN_A, LOW);
+        digitalWrite(MOTOR_2_PIN_B, LOW);
+      }
+    }
+    //All booms extended, continue
+    for(int i=0; i<10; i++){
+      takePhoto();
+      delay(5000);
+    }
+    while(millis() < 275000){
+      //Do nothing until T+275
+    }
+    retractCommsBoom();
+    retractCamBoom();
+    
   }
   //If the sufficient amount of time 
   
