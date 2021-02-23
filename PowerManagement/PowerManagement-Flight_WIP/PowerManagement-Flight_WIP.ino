@@ -1,6 +1,7 @@
 /*  Mines Rocksat-X 2020 Power management board flight code
  *  This code handles powering up the other subsystems and monitoring for overcurrent and overtemp.
  *  Note that you need the teensy 4.0 add-on for Arduino for this to function.
+ *  Currently the refreshMonitor checks for faults at 13 Hz
  */
  
 /* Analog Mux Channel Names:
@@ -132,40 +133,40 @@ void refreshMonitor(){
   //All temps and currents acquired. Verify that they are within bounds
   //Check for excessive 12V regulator temp
   if(temp_12V > 85.0) {
-    Serial.print("Excessive 12V regulator temp.");
+    Serial.println("Excessive 12V regulator temp.");
     digitalWrite(ENABLE_STA_12V, OUTPUT_DISABLE);
     digitalWrite(ENABLE_CAM_12V, OUTPUT_DISABLE);
   }
   //Check for excessive 5VA temp
   if(temp_5VA > 85.0){
-    Serial.print("Excessive 5VA regulator temp.");
+    Serial.println("Excessive 5VA regulator temp.");
     for(int i = 0; i < 5; i++){
       digitalWrite(ENABLES_5VA[i], OUTPUT_DISABLE);
     }
   }
   //Check for excessive 5VD temp
   if(temp_5VD > 85.0){
-    Serial.print("Excessive 5VD regulator temp.");
+    Serial.println("Excessive 5VD regulator temp.");
     for(int i = 0; i < 5; i++){
       digitalWrite(ENABLES_5VD[i], OUTPUT_DISABLE);
     }
   }
   //Check for excessive 12V current
   if((camCurrent_12V + staCurrent_12V) > 2.5){
-    Serial.print("Excessive 12V current.");
+    Serial.println("Excessive 12V current.");
     digitalWrite(ENABLE_STA_12V, OUTPUT_DISABLE);
     digitalWrite(ENABLE_CAM_12V, OUTPUT_DISABLE);
   }
   //Check for excessive 5VD current
-  if((staCurrent_5VD + camCurrent_5VD + magCurrent_5VD + txCurrent_5VD + lasCurrent_5VD)){
-    Serial.print("Excessive 5VD current.");
+  if((staCurrent_5VD + camCurrent_5VD + magCurrent_5VD + txCurrent_5VD + lasCurrent_5VD) > 4.0){
+    Serial.println("Excessive 5VD current.");
     for(int i = 0; i < 5; i++){
       digitalWrite(ENABLES_5VD[i], OUTPUT_DISABLE);
     }
   }
   //Check for excessive 5VA current
-  if((staCurrent_5VA + camCurrent_5VA + magCurrent_5VA + txCurrent_5VA + lasCurrent_5VA)){
-    Serial.print("Excessive 5VA current.");
+  if((staCurrent_5VA + camCurrent_5VA + magCurrent_5VA + txCurrent_5VA + lasCurrent_5VA) > 6.0){
+    Serial.println("Excessive 5VA current.");
     for(int i = 0; i < 5; i++){
       digitalWrite(ENABLES_5VA[i], OUTPUT_DISABLE);
     }
@@ -198,6 +199,8 @@ void setup() {
   digitalWrite(MUX_SEL_C, 0);
   digitalWrite(MUX_SEL_B, 0);
   digitalWrite(MUX_SEL_A, 0);
+  //Setup complete
+  Serial.println("Setup complete.");
 }
 
 void loop() {
@@ -205,17 +208,20 @@ void loop() {
   upTime = millis();
   //Check if T_OFF has been reached, and turn off if true
   if (upTime > T_OFF){
-    Serial.print("T_OFF reached, powering down outputs.");
+    Serial.println("T_OFF reached, powering down outputs.");
     for (int i = 0; i < 5; i++){
       digitalWrite(ENABLES_5VD[i], OUTPUT_DISABLE);
       digitalWrite(ENABLES_5VA[i], OUTPUT_DISABLE);
     }
     digitalWrite(ENABLE_STA_12V, OUTPUT_DISABLE);
     digitalWrite(ENABLE_CAM_12V, OUTPUT_DISABLE);
+    while(true){
+      //Do nothing, system has been powered down so wait for wallops power to turn off.
+    }
   }
   //Check if TE_1 has been reached, if yes, turn on 5VD channels
   if((upTime > TE_1) && (!TE_1_Active)){
-    Serial.print("TE_1 reached, powering on 5VD channels");
+    Serial.println("TE_1 reached, powering on 5VD channels.");
     //5V digital lines for computers
     for (int i = 0; i < 5; i++){
       digitalWrite(ENABLES_5VD[i], OUTPUT_ENABLE);
@@ -225,7 +231,7 @@ void loop() {
   }
   //Check if TE_2 has been reached, if yes, then turn on 5VA and 12V channels
   if((upTime > TE_2) && (!TE_2_Active)){
-    Serial.print("TE_2 reached, powering on 5VA and 12V channels");
+    Serial.println("TE_2 reached, powering on 5VA and 12V channels.");
     //5V active lines for actuators
     digitalWrite(ENABLE_MAG_5VA, OUTPUT_ENABLE);
     digitalWrite(ENABLE_STA_5VA, OUTPUT_ENABLE);

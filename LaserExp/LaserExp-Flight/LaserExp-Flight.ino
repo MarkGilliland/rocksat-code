@@ -41,7 +41,7 @@ byte currentLaserTarget = 0;
 
 
 //Define function that is run whenever the Arduino receives a command from the master
-bool receiveCommand(){
+void receiveCommand(){
   int currentCommand = 0; //Initialize variable that will temporarily hold command
   while(Wire.available() > 0){
     currentCommand = Wire.read();
@@ -72,9 +72,13 @@ bool receiveCommand(){
       //Do nothing
       break;
   }
-
   //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
   currentCommand = 0;
+}
+
+//Function that is executed when master requests data
+void requestCommand(){
+  Wire.write("ok");
 }
 
 void setup() {
@@ -84,9 +88,11 @@ void setup() {
   // Start I2C for communication to master
   // Join I2C bus as a slave with address 0x02 for Laser board, 0x03 for Static board,
   // 0x04 for Magnet board, 0x05 for Boom control board.
-  Wire.begin(0x02);          
+  Wire.begin(0x04);          
   // When a command is received from the master, jump to the receiveCommand function and execute the proper command
   Wire.onReceive(receiveCommand); 
+  // When a request for data is received from the master, jump to requestCommand function and send
+  Wire.onRequest(requestCommand);
   
   // Setup motor driver pins
   pinMode(STEPPER_1_PIN, OUTPUT);
