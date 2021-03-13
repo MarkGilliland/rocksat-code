@@ -53,11 +53,13 @@ void receiveCommand(){
       //Do nothing
       break;
   }
-
   //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
   currentCommand = 0;
 }
 
+void requestCommand(){
+  Wire.write(6);
+}
 void setup() {
   // Start serial for debugging, comment out for production software
   Serial.begin(9600);
@@ -68,6 +70,7 @@ void setup() {
   Wire.begin(0x04);          
   // When a command is received from the master, jump to the receiveCommand function and execute the proper command
   Wire.onReceive(receiveCommand); 
+  Wire.onRequest(requestCommand);
   
   // Setup motor driver pins
   pinMode(STEPPER_1_PIN, OUTPUT);

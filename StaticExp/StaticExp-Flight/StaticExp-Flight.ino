@@ -69,9 +69,12 @@ void receiveCommand(){
       //Do nothing
       break;
   }
-
   //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
   currentCommand = 0;
+}
+
+void requestCommand(){
+  Wire.write(6);
 }
 
 void setup() {
@@ -83,7 +86,8 @@ void setup() {
   // 0x04 for Magnet board, 0x05 for Boom control board.
   Wire.begin(0x03);          
   // When a command is received from the master, jump to the receiveCommand function and execute the proper command
-  Wire.onReceive(receiveCommand); 
+  Wire.onReceive(receiveCommand);
+  Wire.onRequest(requestCommand);
   
   // Setup motor driver pins
   pinMode(STEPPER_1_PIN, OUTPUT);

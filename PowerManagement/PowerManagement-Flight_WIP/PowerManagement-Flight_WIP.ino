@@ -14,8 +14,6 @@
  * 110-  6: 5VA-STA          14: 5VD-LAS
  * 111-  7: 12V Temperature  15: 5VD Temperature
  */
-//Defines for behavior of experiment
-//#define Not_Used_Currently
 
 //Constant pin declarations:
 //Misc Pins

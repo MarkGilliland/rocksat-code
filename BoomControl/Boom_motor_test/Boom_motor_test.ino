@@ -77,8 +77,8 @@ void setup() {
  
   // Test for motor function
   digitalWrite(MOTORS_ENABLE_PIN, HIGH);
-  digitalWrite(MOTOR_1_PIN_A, LOW);     //Swap this to HIGH and next line to LOW to change motor direction
-  digitalWrite(MOTOR_1_PIN_B, HIGH);
+  digitalWrite(MOTOR_1_PIN_A, HIGH);     //Swap this to HIGH and next line to LOW to change motor direction
+  digitalWrite(MOTOR_1_PIN_B, LOW);
   digitalWrite(MOTOR_2_PIN_A, LOW);
   digitalWrite(MOTOR_2_PIN_B, LOW);
 

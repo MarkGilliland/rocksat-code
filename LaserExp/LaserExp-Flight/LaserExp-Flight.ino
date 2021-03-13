@@ -78,7 +78,7 @@ void receiveCommand(){
 
 //Function that is executed when master requests data
 void requestCommand(){
-  Wire.write("ok");
+  Wire.write(6);
 }
 
 void setup() {
@@ -88,7 +88,7 @@ void setup() {
   // Start I2C for communication to master
   // Join I2C bus as a slave with address 0x02 for Laser board, 0x03 for Static board,
   // 0x04 for Magnet board, 0x05 for Boom control board.
-  Wire.begin(0x04);          
+  Wire.begin(0x02);          
   // When a command is received from the master, jump to the receiveCommand function and execute the proper command
   Wire.onReceive(receiveCommand); 
   // When a request for data is received from the master, jump to requestCommand function and send
@@ -116,7 +116,7 @@ void setup() {
 }
 
 void loop() {
-  
+  //This does nothing, all functionality done by onReceive and related functions
 }
 
 void turnOnLaser(){

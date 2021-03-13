@@ -76,9 +76,16 @@ void receiveCommand(){
     case 0x1F:
       turnOffCamera();
       break;
+    case 0x16:
+      switchMode();
+      break;
   }
   //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
   currentCommand = 0;
+}
+
+void requestCommand(){
+  Wire.write(6);
 }
 
 void setup() {
@@ -89,7 +96,8 @@ void setup() {
   // Join I2C bus as a slave with address 0x01 AKA 0b0000001 AKA 1.
   Wire.begin(0x05);          
   // When a command is received from the master, jump to the receiveCommand function and execute the proper command
-  Wire.onReceive(receiveCommand); 
+  Wire.onReceive(receiveCommand);
+  Wire.onRequest(requestCommand);
   
   // Setup motor driver pins
   pinMode(MOTORS_ENABLE_PIN, OUTPUT);
@@ -219,17 +227,23 @@ void retractCamBoom(){
 
 void takePhoto(){
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
-  delay(100);
+  delay(500); //100?
   digitalWrite(CAMERA_CONTROL_PIN, LOW);
 }
 
 void turnOnCamera(){
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
-  delay(800);
+  delay(5000); //800
   digitalWrite(CAMERA_CONTROL_PIN, LOW); 
 }
 
 void turnOffCamera(){
+  digitalWrite(CAMERA_CONTROL_PIN, HIGH);
+  delay(5000); //2000
+  digitalWrite(CAMERA_CONTROL_PIN, LOW); 
+}
+
+void switchMode(){
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
   delay(2000);
   digitalWrite(CAMERA_CONTROL_PIN, LOW); 
