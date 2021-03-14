@@ -28,6 +28,8 @@
 #define MOTOR_2_PIN_A A2
 #define MOTOR_2_PIN_B A3
 #define CAMERA_CONTROL_PIN 3 //Camera attached to Servo header, D3
+#define M_LED_PIN 4
+#define SSR_PIN 5
 //define mechanical constants
 #define REQUIRED_CAM_EXT_TIME 46000   //May need to be more than this
 #define REQUIRED_TELEM_EXT_TIME 7666  //Should be about right
@@ -79,6 +81,9 @@ void receiveCommand(){
     case 0x16:
       switchMode();
       break;
+    case 0x55:
+      turnOnM();
+      break;
   }
   //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
   currentCommand = 0;
@@ -126,7 +131,7 @@ void loop() {
   if(AUTONOMOUS_MODE_ENABLE == 0){
     // Check if extenstion limit switches have been pressed, if so, turn off respective motor
     // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
-    if(digitalRead(LIMIT_SWITCH_2) == HIGH || digitalRead(LIMIT_SWITCH_1) == HIGH || myEnc.read() < -20000){
+    if(digitalRead(LIMIT_SWITCH_2) == HIGH || digitalRead(LIMIT_SWITCH_1) == HIGH || myEnc.read() < -120000){
       digitalWrite(MOTOR_1_PIN_A, LOW);
       digitalWrite(MOTOR_1_PIN_B, LOW);
     }
@@ -247,4 +252,8 @@ void switchMode(){
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
   delay(2000);
   digitalWrite(CAMERA_CONTROL_PIN, LOW); 
+}
+
+void turnOnM(){
+  digitalWrite(M_LED_PIN, HIGH);
 }

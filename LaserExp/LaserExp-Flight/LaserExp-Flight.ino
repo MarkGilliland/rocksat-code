@@ -130,18 +130,20 @@ void turnOffLaser(){
 void changeTarget(){
   switch (currentLaserTarget) {
     case 0:
-      //mirrorStepper.step(__);
+      //Do nothing
+      //mirrorStepper.step(10);
       break;
     case 1:
-      //mirrorStepper.step(__);
+      mirrorStepper.step(10);
       break;
     case 2:
-      //mirrorStepper.step(__);
+      mirrorStepper.step(10);
       break;
     default:
       Serial.print("Was commanded past the third target");
       break;
   }
+  currentLaserTarget++;
 }
 
 void releaseSMA(){

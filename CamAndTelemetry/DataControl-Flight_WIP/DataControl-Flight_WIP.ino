@@ -35,6 +35,8 @@ void parallelOut(){
 }
 
 void setup() {
+  //Turn on led
+  digitalWrite(13, HIGH);
   // Start debug serial interface
   Serial.begin(115200);
   // Start RS-232 serial interface
@@ -78,8 +80,9 @@ void loop() {
   Wire.write(0x16);             //Switch to video mode
   Wire.endTransmission();
 
+  //Turn on M lights
   Wire.beginTransmission(0x05); //Boom control board
-  Wire.write(0x15);             //Record video
+  Wire.write(0x55);             //Turn on M lights
   Wire.endTransmission();
   
   //wait 10 seconds
@@ -99,6 +102,11 @@ void loop() {
   Wire.beginTransmission(0x05); //Boom control board
   Wire.write(0x16);             //Switch to photo mode
   Wire.endTransmission();
+
+  //Turn on pi camera lights
+  Wire.beginTransmission(0x04); //Magnet control board
+  Wire.write(0x4C);             //Turn on Pi camera lights
+  Wire.endTransmission();
   
   //TE-2 has now been reached, begin commanding experiments 
   Wire.beginTransmission(0x02); //Laser control board
@@ -117,6 +125,11 @@ void loop() {
   while(millis() < 133000){
     //do nothing, wait until we are closer to apogee
   }
+  //Turn on static generator
+  Wire.beginTransmission(0x03); //Magnet control board
+  Wire.write(0x3D);             //Turn on Pi camera lights
+  Wire.endTransmission();
+  delay(1000);
   
   //Launch the 10 BBs from Static and magnet experiment
   for(int i = 0; i < 10; i++){
