@@ -150,7 +150,7 @@ void refreshMonitor(){
     }
   }
   //Check for excessive 12V current
-  if((camCurrent_12V + staCurrent_12V) > 2.5){
+  if((camCurrent_12V + staCurrent_12V) > 2.6){
     Serial.println("Excessive 12V current.");
     digitalWrite(ENABLE_STA_12V, OUTPUT_DISABLE);
     digitalWrite(ENABLE_CAM_12V, OUTPUT_DISABLE);

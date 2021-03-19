@@ -38,7 +38,7 @@ int debrisLauncherDegrees = 0;
 int debrisLaunched = 0;
 
 //Define function that is run whenever the Arduino receives a command from the master
-void receiveCommand(){
+void receiveCommand(int numBytes){
   int currentCommand = 0; //Initialize variable that will temporarily hold command
   while(Wire.available() > 0){
     currentCommand = Wire.read();

@@ -70,6 +70,7 @@ void loop() {
   while(millis() < 70000){
    //do nothing
   }
+  Serial.println("Turning on camera");
   //Turn on madv360 camera
   Wire.beginTransmission(0x05); //Boom control board
   Wire.write(0x1A);             //Turn on camera
@@ -81,6 +82,7 @@ void loop() {
   Wire.endTransmission();
 
   //Turn on M lights
+  Serial.println("Turn on M LEDS");
   Wire.beginTransmission(0x05); //Boom control board
   Wire.write(0x55);             //Turn on M lights
   Wire.endTransmission();
@@ -98,12 +100,15 @@ void loop() {
   while(millis() < TE_2){
     //do nothing
   }
+  
+  Serial.println("T+85 reached");
   //Switch to photo mode
   Wire.beginTransmission(0x05); //Boom control board
   Wire.write(0x16);             //Switch to photo mode
   Wire.endTransmission();
 
   //Turn on pi camera lights
+  Serial.println("Turn on Pi camera lights");
   Wire.beginTransmission(0x04); //Magnet control board
   Wire.write(0x4C);             //Turn on Pi camera lights
   Wire.endTransmission();
@@ -125,12 +130,16 @@ void loop() {
   while(millis() < 133000){
     //do nothing, wait until we are closer to apogee
   }
+  Serial.println("T+133 reached");
+  
   //Turn on static generator
+  Serial.println("Turn on static generator");
   Wire.beginTransmission(0x03); //Magnet control board
   Wire.write(0x3D);             //Turn on Pi camera lights
   Wire.endTransmission();
   delay(1000);
-  
+
+  Serial.println("Launching debris");
   //Launch the 10 BBs from Static and magnet experiment
   for(int i = 0; i < 10; i++){
     Wire.beginTransmission(0x03); //Static control board
@@ -142,6 +151,7 @@ void loop() {
   }
   
   //Prepare laser by releasing targets
+  Serial.println("Release SMA springs");
   Wire.beginTransmission(0x02); //Laser control board
   Wire.write(0x33);             //Release SMA springs
   Wire.endTransmission();
@@ -190,6 +200,7 @@ void loop() {
   while(millis() < 275000){
     //Do nothing until we reach T+275 
   }
+  Serial.println("T+275 reached");
   Wire.beginTransmission(0x05); //Boom control board
   Wire.write(0x10);             //Retract Camera boom
   Wire.endTransmission();

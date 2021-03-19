@@ -86,12 +86,12 @@ void setup() {
 
   //boot the camera
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
-  delay(800);
+  delay(5000);
   digitalWrite(CAMERA_CONTROL_PIN, LOW);
   delay(1500);
   //start video
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
-  delay(800);
+  delay(500);
   digitalWrite(CAMERA_CONTROL_PIN, LOW);
   delay(1500);
 
@@ -105,7 +105,7 @@ void setup() {
   delay(500);
   //shut off camera
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
-  delay(500);
+  delay(5000);
   digitalWrite(CAMERA_CONTROL_PIN, LOW);
   delay(500);
 }

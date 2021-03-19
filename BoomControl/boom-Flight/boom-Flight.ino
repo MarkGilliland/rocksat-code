@@ -51,7 +51,7 @@ bool camBoomExtended = false;
 
 Encoder myEnc(ENCODER_1_PIN, ENCODER_2_PIN);
 
-void receiveCommand(){
+void receiveCommand(int numBytes){
   int currentCommand = 0; //Initialize variable that will temporarily hold command
   while(Wire.available() > 0){
     currentCommand = Wire.read();
