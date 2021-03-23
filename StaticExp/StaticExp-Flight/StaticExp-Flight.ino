@@ -25,6 +25,7 @@
 #define LED_PIN 13
 #define SERVO_HEADER_PIN 10
 #define LIGHT_SENSOR_PIN A0 //PC0, need to add header to access this pin
+#define AUTONOMOUS_MODE_ENABLE 1
 
 //define motor properties:
 #define STEPS_PER_REVOLUTION 513  //for stepper library
@@ -59,11 +60,13 @@ void receiveCommand(int numBytes){
       break;
     case 76:  //0x4C
       //Turn on Pi Camera lights
-      turnOnLights();
+      //turnOnLights();
+      digitalWrite(10, HIGH);
       break;
     case 81:  //0x4C
       //Turn off Pi Camera lights
-      turnOffLights();
+      //turnOffLights();
+      digitalWrite(10, LOW);
       break;
     default:
       //Do nothing
@@ -71,6 +74,11 @@ void receiveCommand(int numBytes){
   }
   //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
   currentCommand = 0;
+  noInterrupts();
+  digitalWrite(LED_PIN, HIGH);
+  delay(1000);
+  digitalWrite(LED_PIN, LOW);
+  interrupts();
 }
 
 void requestCommand(){
@@ -85,10 +93,11 @@ void setup() {
   // Join I2C bus as a slave with address 0x02 for Laser board, 0x03 for Static board,
   // 0x04 for Magnet board, 0x05 for Boom control board.
   Wire.begin(0x03);          
-  // When a command is received from the master, jump to the receiveCommand function and execute the proper command
-  Wire.onReceive(receiveCommand);
-  Wire.onRequest(requestCommand);
-  
+  if(AUTONOMOUS_MODE_ENABLE == 0){
+    // When a command is received from the master, jump to the receiveCommand function and execute the proper command
+    Wire.onReceive(receiveCommand);
+    Wire.onRequest(requestCommand);
+  }
   // Setup motor driver pins
   pinMode(STEPPER_1_PIN, OUTPUT);
   pinMode(STEPPER_2_PIN, OUTPUT);
@@ -108,12 +117,27 @@ void setup() {
 
   //Init the stepper object with an initial speed
   mirrorStepper.setSpeed(MAX_STEPPER_SPEED);
-
 }
 
 void loop() {
-  // Nothing here, all functionality is provided by recieveCommand and custom functions
-
+  if(AUTONOMOUS_MODE_ENABLE == 0){
+    // Nothing here, all functionality is provided by recieveCommand and custom functions
+  }
+  if(AUTONOMOUS_MODE_ENABLE == 1){
+    //Turn on pi camera lights
+    digitalWrite(SERVO_HEADER_PIN, HIGH);
+    while(millis() < 65000){
+      //Do nothing until we reach T+85
+    }
+    for(int i = 0; i < 10; i++){
+      launchDebris();
+      delay(10000);
+    }
+    digitalWrite(LED_PIN, HIGH);
+    while(true){
+      //Do nothing, program has completed running
+    }
+  }
 }
 
 void turnOnStatic(){
@@ -132,6 +156,7 @@ void launchDebris(){
   else if(debrisLaunched < 10){
     //Rotate stepper to launch one BB
     mirrorStepper.step(STEPS_PER_LAUNCH);
+    debrisLaunched++;
   }
 }
 

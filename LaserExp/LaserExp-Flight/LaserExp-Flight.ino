@@ -27,6 +27,7 @@
 #define LED_PIN 13
 #define SERVO_HEADER_PIN 10
 #define LIGHT_SENSOR_PIN A0 //PC0, need to add header to access this pin
+#define AUTONOMOUS_MODE_ENABLE 0
 
 //define motor properties:
 #define STEPS_PER_REVOLUTION 513  //for stepper library
@@ -117,6 +118,27 @@ void setup() {
 
 void loop() {
   //This does nothing, all functionality done by onReceive and related functions
+  if(AUTONOMOUS_MODE_ENABLE == 0){
+    //Do nothing, all functions controlled by I2C
+  }
+  if(AUTONOMOUS_MODE_ENABLE == 1){
+    //Handle all functions locally
+    while(millis() < 65000){
+      //Do nothing until T+85 is reached
+    }
+    turnOnLaser();
+    homeLaser();
+    releaseSMA();
+    delay(1000);
+    changeTarget();
+    delay(15000);
+    changeTarget();
+    delay(15000);
+    changeTarget();
+    delay(15000);
+    turnOffLaser();
+  }
+  
 }
 
 void turnOnLaser(){
