@@ -199,49 +199,27 @@ void setup() {
   digitalWrite(MUX_SEL_A, 0);
   //Setup complete
   Serial.println("Setup complete.");
+  
+  //Power on all channels
+  //5VD channels
+  digitalWrite(ENABLE_MAG_5VD, OUTPUT_ENABLE);
+  digitalWrite(ENABLE_STA_5VD, OUTPUT_ENABLE);
+  digitalWrite(ENABLE_TX_5VD, OUTPUT_ENABLE);
+  digitalWrite(ENABLE_LAS_5VD, OUTPUT_ENABLE);
+  digitalWrite(ENABLE_CAM_5VD, OUTPUT_ENABLE);
+  delay(500);
+  //5VA Channels
+  digitalWrite(ENABLE_MAG_5VA, OUTPUT_ENABLE);
+  digitalWrite(ENABLE_STA_5VA, OUTPUT_ENABLE);
+  digitalWrite(ENABLE_TX_5VA, OUTPUT_ENABLE);
+  digitalWrite(ENABLE_LAS_5VA, OUTPUT_ENABLE);
+  digitalWrite(ENABLE_CAM_5VA, OUTPUT_ENABLE);
+  //12V lines for actuators
+  digitalWrite(ENABLE_STA_12V, OUTPUT_ENABLE);
+  digitalWrite(ENABLE_CAM_12V, OUTPUT_ENABLE);
 }
 
 void loop() {
+  //Check for faults
   refreshMonitor();
-  upTime = millis();
-  //Check if T_OFF has been reached, and turn off if true
-  if (upTime > T_OFF){
-    Serial.println("T_OFF reached, powering down outputs.");
-    for (int i = 0; i < 5; i++){
-      digitalWrite(ENABLES_5VD[i], OUTPUT_DISABLE);
-      digitalWrite(ENABLES_5VA[i], OUTPUT_DISABLE);
-    }
-    digitalWrite(ENABLE_STA_12V, OUTPUT_DISABLE);
-    digitalWrite(ENABLE_CAM_12V, OUTPUT_DISABLE);
-    while(true){
-      //Do nothing, system has been powered down so wait for wallops power to turn off.
-    }
-  }
-  //Check if TE_1 has been reached, if yes, turn on 5VD channels
-  if((upTime > TE_1) && (!TE_1_Active)){
-    Serial.println("TE_1 reached, powering on 5VD channels.");
-    //5V digital lines for computers
-    for (int i = 0; i < 5; i++){
-      digitalWrite(ENABLES_5VD[i], OUTPUT_ENABLE);
-    }
-    //Set global flag to show that digital outputs are on
-    TE_1_Active = true;
-  }
-  //Check if TE_2 has been reached, if yes, then turn on 5VA and 12V channels
-  if((upTime > TE_2) && (!TE_2_Active)){
-    Serial.println("TE_2 reached, powering on 5VA and 12V channels.");
-    //5V active lines for actuators
-    digitalWrite(ENABLE_MAG_5VA, OUTPUT_ENABLE);
-    digitalWrite(ENABLE_STA_5VA, OUTPUT_ENABLE);
-    digitalWrite(ENABLE_TX_5VA, OUTPUT_ENABLE);
-    digitalWrite(ENABLE_LAS_5VA, OUTPUT_ENABLE);
-    digitalWrite(ENABLE_CAM_5VA, OUTPUT_ENABLE);
-    //12V lines for actuators
-    digitalWrite(ENABLE_STA_12V, OUTPUT_ENABLE);
-    digitalWrite(ENABLE_CAM_12V, OUTPUT_ENABLE);
-    //Set global flag to show that actuator outputs are on
-    TE_2_Active = true; 
-  }
-  
-
 }

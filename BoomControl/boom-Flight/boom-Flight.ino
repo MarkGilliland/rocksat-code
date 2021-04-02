@@ -1,13 +1,12 @@
 // Boom Control Board code - Initial
-// Drives camera boom, drives telemetry boom, reads camera boom encoder
+// Drives camera boom, controls M LEDs and 360 camera
 // and both boom's limit switches.  
 // LIMIT_SWITCH_1 = retracted camera boom, LIMIT_SWITCH_2 = extended camera boom
-// LIMIT_SWITCH_2 = retracted telemetry boom, LIMIT_SWITCH_3 = extended telemetry boom
+// LIMIT_SWITCH_3 = Not used, LIMIT_SWITCH_4 = Not used
 // Current execution time is ~6ms per loop
 // At least with DFRobot motor, encoder counts are negative for CW and positive for CCW rotation.
-// Telemetry boom leadscrew is 2mm/1 rotation or 0.0787 inches per rotation
-// This gives telem speed as 0.60in/sec
 // Camera boom pulley system equates to ________.
+
 #include <Wire.h>
 #include <Encoder.h> //needed from an online library
 
@@ -28,39 +27,30 @@
 #define MOTOR_2_PIN_A A2
 #define MOTOR_2_PIN_B A3
 #define CAMERA_CONTROL_PIN 3 //Camera attached to Servo header, D3
+#define M_LED_PIN 4
+#define SSR_PIN 5
 //define mechanical constants
-#define REQUIRED_CAM_EXT_TIME 46000   //May need to be more than this
-#define REQUIRED_TELEM_EXT_TIME 7666  //Should be about right
-#define AUTONOMOUS_MODE_ENABLE 0
+#define REQUIRED_CAM_EXT_TIME 50000   //May need to be more than this
+#define AUTONOMOUS_MODE_ENABLE 1
 
 //define global variables used in the program
 long encoderCounts = 0;
 long cameraRotations = 0;
 long cameraPosition = 0;
-long telemetryRotations = 0;
-long telemetryPosition = 0;
 long camExtensionTime = 0;
-long telemExtensionTime = 0;
 long camRetractionTime = 0;
-long telemRetractionTime = 0;
 long flightTime = 0;
-bool commsBoomExtended = false;
 bool camBoomExtended = false;
 
+//Setup motor encoder
 Encoder myEnc(ENCODER_1_PIN, ENCODER_2_PIN);
 
-void receiveCommand(){
+void receiveCommand(int numBytes){
   int currentCommand = 0; //Initialize variable that will temporarily hold command
   while(Wire.available() > 0){
     currentCommand = Wire.read();
   }
   switch (currentCommand){
-    case 0x01:
-      extendCommsBoom();
-      break;
-    case 0x06:
-      retractCommsBoom();
-      break;
     case 0x0B:
       extendCamBoom();
       break;
@@ -76,20 +66,32 @@ void receiveCommand(){
     case 0x1F:
       turnOffCamera();
       break;
+    case 0x16:
+      switchMode();
+      break;
+    case 0x55:
+      turnOnM();
+      break;
   }
   //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
   currentCommand = 0;
 }
 
+void requestCommand(){
+  Wire.write(6);
+}
+
 void setup() {
   // Start serial for debugging, comment out for production software
   Serial.begin(9600);
+  Serial.println("Online.");
 
   // Start I2C for communication to master
-  // Join I2C bus as a slave with address 0x01 AKA 0b0000001 AKA 1.
+  // Join I2C bus as a slave with address 0x05 AKA 0b0000001 AKA 5.
   Wire.begin(0x05);          
   // When a command is received from the master, jump to the receiveCommand function and execute the proper command
-  Wire.onReceive(receiveCommand); 
+  Wire.onReceive(receiveCommand);
+  Wire.onRequest(requestCommand);
   
   // Setup motor driver pins
   pinMode(MOTORS_ENABLE_PIN, OUTPUT);
@@ -97,75 +99,63 @@ void setup() {
   pinMode(MOTOR_1_PIN_B, OUTPUT);
   pinMode(MOTOR_2_PIN_A, OUTPUT);
   pinMode(MOTOR_2_PIN_B, OUTPUT);
+  //Make camera control pin an output
+  pinMode(CAMERA_CONTROL_PIN, OUTPUT);
   // Setup input pins
-  pinMode(LIMIT_SWITCH_1, INPUT);
+  pinMode(LIMIT_SWITCH_1, OUTPUT);
   pinMode(LIMIT_SWITCH_2, INPUT);
   pinMode(LIMIT_SWITCH_3, INPUT);
   pinMode(LIMIT_SWITCH_4, INPUT);
   pinMode(ENCODER_1_PIN, INPUT);
   pinMode(ENCODER_2_PIN, INPUT);
- 
-  // Test for motor function
+
+  //Make sure M is off
+  digitalWrite(M_LED_PIN, HIGH);
+  
+  //Ensure that motors are turned off initially
   digitalWrite(MOTORS_ENABLE_PIN, HIGH);
   digitalWrite(MOTOR_1_PIN_A, LOW);
-  digitalWrite(MOTOR_1_PIN_B, HIGH);
+  digitalWrite(MOTOR_1_PIN_B, LOW);
   digitalWrite(MOTOR_2_PIN_A, LOW);
   digitalWrite(MOTOR_2_PIN_B, LOW);
 }
 
 void loop() {
-  
+  //AUTONOMOUS_MODE_ENABLE set to 0 means central control by data control board. AUTONOMOUS_MODE_ENABLE
   if(AUTONOMOUS_MODE_ENABLE == 0){
     // Check if extenstion limit switches have been pressed, if so, turn off respective motor
     // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
-    if(digitalRead(LIMIT_SWITCH_2) == HIGH || digitalRead(LIMIT_SWITCH_1) == HIGH || myEnc.read() < -20000){
+    if(digitalRead(LIMIT_SWITCH_2) == HIGH || digitalRead(LIMIT_SWITCH_1) == HIGH || myEnc.read() < -120000){
       digitalWrite(MOTOR_1_PIN_A, LOW);
       digitalWrite(MOTOR_1_PIN_B, LOW);
-    }
-    // If telemetry boom is either fully retracted or extended, stop the telemetry boom motor. 
-    if(digitalRead(LIMIT_SWITCH_4) == HIGH || digitalRead(LIMIT_SWITCH_3) == HIGH){
-      digitalWrite(MOTOR_2_PIN_A, LOW);
-      digitalWrite(MOTOR_2_PIN_B, LOW);
     }
     // If the sufficient amount of time to extend the camera boom has passed, turn off the boom motor
     if((millis() > (camExtensionTime + REQUIRED_CAM_EXT_TIME)) || (millis() > (camRetractionTime + REQUIRED_CAM_EXT_TIME))){
       digitalWrite(MOTOR_1_PIN_A, LOW);
       digitalWrite(MOTOR_1_PIN_B, LOW);  
     }
-    //If the sufficient amount of time to extend the telemetry boom has passed, turn off the boom motor
-    if((millis() > (telemExtensionTime + REQUIRED_TELEM_EXT_TIME)) || (millis() > (telemRetractionTime + REQUIRED_TELEM_EXT_TIME))){
-      digitalWrite(MOTOR_2_PIN_A, LOW);
-      digitalWrite(MOTOR_2_PIN_B, LOW);
-    }
   }
   else if (AUTONOMOUS_MODE_ENABLE == 1){
-    while(millis() < 85000){
+    turnOnM();
+    turnOnCamera();
+    while(millis() < 65000){ //Board powers on at T+20 so this is T+65 to compensate for that 
       //Do nothing until T+85s
     }
     //Begin boom extension
-    extendCommsBoom();
+    Serial.println("Extending camera boom now.");
     extendCamBoom();
-    while((commsBoomExtended && camBoomExtended) == false){
+    while(camBoomExtended == false){
+      Serial.println(myEnc.read());
       // Check if extenstion limit switches have been pressed, if so, turn off respective motor
       // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
-      if(digitalRead(LIMIT_SWITCH_2) == HIGH || digitalRead(LIMIT_SWITCH_1) == HIGH || myEnc.read() < -20000){
+      if(digitalRead(LIMIT_SWITCH_2) == HIGH || digitalRead(LIMIT_SWITCH_1) == HIGH || myEnc.read() < -119000){
         digitalWrite(MOTOR_1_PIN_A, LOW);
         digitalWrite(MOTOR_1_PIN_B, LOW);
-      }
-      // If telemetry boom is either fully retracted or extended, stop the telemetry boom motor. 
-      if(digitalRead(LIMIT_SWITCH_4) == HIGH || digitalRead(LIMIT_SWITCH_3) == HIGH){
-        digitalWrite(MOTOR_2_PIN_A, LOW);
-        digitalWrite(MOTOR_2_PIN_B, LOW);
       }
       // If the sufficient amount of time to extend the camera boom has passed, turn off the boom motor
       if((millis() > (camExtensionTime + REQUIRED_CAM_EXT_TIME)) || (millis() > (camRetractionTime + REQUIRED_CAM_EXT_TIME))){
         digitalWrite(MOTOR_1_PIN_A, LOW);
         digitalWrite(MOTOR_1_PIN_B, LOW);  
-      }
-      //If the sufficient amount of time to extend the telemetry boom has passed, turn off the boom motor
-      if((millis() > (telemExtensionTime + REQUIRED_TELEM_EXT_TIME)) || (millis() > (telemRetractionTime + REQUIRED_TELEM_EXT_TIME))){
-        digitalWrite(MOTOR_2_PIN_A, LOW);
-        digitalWrite(MOTOR_2_PIN_B, LOW);
       }
     }
     //All booms extended, continue
@@ -176,8 +166,10 @@ void loop() {
     while(millis() < 275000){
       //Do nothing until T+275
     }
-    retractCommsBoom();
+    //retractCommsBoom();
     retractCamBoom();
+    //Turn on 360 camera
+    turnOffCamera();
     
   }
   //If the sufficient amount of time 
@@ -185,27 +177,11 @@ void loop() {
   //Serial.println(millis());
 }
 
-void extendCommsBoom(){
-  digitalWrite(MOTORS_ENABLE_PIN, HIGH);
-  //If boom goes the wrong way, make pin A HIGH and pin B LOW
-  digitalWrite(MOTOR_2_PIN_A, LOW);
-  digitalWrite(MOTOR_2_PIN_B, HIGH);
-  telemExtensionTime = millis();
-}
-
-void retractCommsBoom(){
-  digitalWrite(MOTORS_ENABLE_PIN, HIGH);
-  //If boom goes the wrong way, make pin A LOW and pin B HIGH
-  digitalWrite(MOTOR_2_PIN_A, HIGH);
-  digitalWrite(MOTOR_2_PIN_B, LOW);
-  telemRetractionTime = millis();
-}
-
 void extendCamBoom(){
   digitalWrite(MOTORS_ENABLE_PIN, HIGH);
   //If boom goes the wrong way, make pin A HIGH and pin B LOW
-  digitalWrite(MOTOR_1_PIN_A, LOW);
-  digitalWrite(MOTOR_1_PIN_B, HIGH);
+  digitalWrite(MOTOR_1_PIN_A, LOW); // Actually LOW
+  digitalWrite(MOTOR_1_PIN_B, HIGH);// Actually HIGH
   camExtensionTime = millis();
 }
 
@@ -219,18 +195,28 @@ void retractCamBoom(){
 
 void takePhoto(){
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
-  delay(100);
+  delay(500); //100?
   digitalWrite(CAMERA_CONTROL_PIN, LOW);
 }
 
 void turnOnCamera(){
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
-  delay(800);
+  delay(5000); //800
   digitalWrite(CAMERA_CONTROL_PIN, LOW); 
 }
 
 void turnOffCamera(){
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
+  delay(5000); //2000
+  digitalWrite(CAMERA_CONTROL_PIN, LOW); 
+}
+
+void switchMode(){
+  digitalWrite(CAMERA_CONTROL_PIN, HIGH);
   delay(2000);
   digitalWrite(CAMERA_CONTROL_PIN, LOW); 
+}
+
+void turnOnM(){
+  digitalWrite(M_LED_PIN, LOW);
 }

@@ -1,6 +1,4 @@
-// Experiment Control Board code - Initial
-// Drives stepper motor, MOSFET-switched outputs
-// WIP flight code for the laser experiment for Mines Rocksat-X 2020
+// WIP flight code for the static experiment for Mines Rocksat-X 2020
 // By: Graham Braly
 
 //Include necessary libraries
@@ -27,7 +25,7 @@
 #define LED_PIN 13
 #define SERVO_HEADER_PIN 10
 #define LIGHT_SENSOR_PIN A0 //PC0, need to add header to access this pin
-#define AUTONOMOUS_MODE_ENABLE 0
+#define AUTONOMOUS_MODE_ENABLE 1
 
 //define motor properties:
 #define STEPS_PER_REVOLUTION 513  //for stepper library
@@ -38,8 +36,7 @@ Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPE
 
 //Global Variables
 int debrisLauncherDegrees = 0;
-byte currentLaserTarget = 0;
-
+int debrisLaunched = 0;
 
 //Define function that is run whenever the Arduino receives a command from the master
 void receiveCommand(int numBytes){
@@ -49,25 +46,27 @@ void receiveCommand(int numBytes){
   }
   //Case statement calls the function that was called for
   switch (currentCommand) {
-    case 36:  //0x24
-      //Turn on laser
-      turnOnLaser();
+    case 61:  //0x3D
+      //Turn on Static generator
+      turnOnStatic();
       break;
-    case 41:  //0x29
-      //Turn off laser
-      turnOffLaser();
+    case 66:  //0x42
+      //Turn off Static generator
+      turnOffStatic();
       break;
-    case 46:
-      //Change target
-      changeTarget();
+    case 71:  //0x47
+      //Launch Debris
+      launchDebris();
       break;
-    case 51: //0x33
-      //release SMA springs
-      releaseSMA();
+    case 76:  //0x4C
+      //Turn on Pi Camera lights
+      //turnOnLights();
+      digitalWrite(10, HIGH);
       break;
-    case 56: //0x38
-      //Home laser
-      homeLaser();
+    case 81:  //0x4C
+      //Turn off Pi Camera lights
+      //turnOffLights();
+      digitalWrite(10, LOW);
       break;
     default:
       //Do nothing
@@ -75,9 +74,13 @@ void receiveCommand(int numBytes){
   }
   //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
   currentCommand = 0;
+  noInterrupts();
+  digitalWrite(LED_PIN, HIGH);
+  delay(1000);
+  digitalWrite(LED_PIN, LOW);
+  interrupts();
 }
 
-//Function that is executed when master requests data
 void requestCommand(){
   Wire.write(6);
 }
@@ -89,12 +92,12 @@ void setup() {
   // Start I2C for communication to master
   // Join I2C bus as a slave with address 0x02 for Laser board, 0x03 for Static board,
   // 0x04 for Magnet board, 0x05 for Boom control board.
-  Wire.begin(0x02);          
-  // When a command is received from the master, jump to the receiveCommand function and execute the proper command
-  Wire.onReceive(receiveCommand); 
-  // When a request for data is received from the master, jump to requestCommand function and send
-  Wire.onRequest(requestCommand);
-  
+  Wire.begin(0x03);          
+  if(AUTONOMOUS_MODE_ENABLE == 0){
+    // When a command is received from the master, jump to the receiveCommand function and execute the proper command
+    Wire.onReceive(receiveCommand);
+    Wire.onRequest(requestCommand);
+  }
   // Setup motor driver pins
   pinMode(STEPPER_1_PIN, OUTPUT);
   pinMode(STEPPER_2_PIN, OUTPUT);
@@ -117,70 +120,50 @@ void setup() {
 }
 
 void loop() {
-  //This does nothing, all functionality done by onReceive and related functions
   if(AUTONOMOUS_MODE_ENABLE == 0){
-    //Do nothing, all functions controlled by I2C
+    // Nothing here, all functionality is provided by recieveCommand and custom functions
   }
   if(AUTONOMOUS_MODE_ENABLE == 1){
-    //Handle all functions locally
+    //Turn on pi camera lights
+    digitalWrite(SERVO_HEADER_PIN, HIGH);
     while(millis() < 65000){
-      //Do nothing until T+85 is reached
+      //Do nothing until we reach T+85
     }
-    turnOnLaser();
-    homeLaser();
-    releaseSMA();
-    delay(1000);
-    changeTarget();
-    delay(15000);
-    changeTarget();
-    delay(15000);
-    changeTarget();
-    delay(15000);
-    turnOffLaser();
+    for(int i = 0; i < 10; i++){
+      launchDebris();
+      delay(10000);
+    }
+    digitalWrite(LED_PIN, HIGH);
+    while(true){
+      //Do nothing, program has completed running
+    }
   }
-  
 }
 
-void turnOnLaser(){
+void turnOnStatic(){
   digitalWrite(MOSFET_1_PIN, HIGH);
 }
 
-void turnOffLaser(){
+void turnOffStatic(){
   digitalWrite(MOSFET_1_PIN, LOW);
 }
 
-void changeTarget(){
-  switch (currentLaserTarget) {
-    case 0:
-      //Do nothing
-      //mirrorStepper.step(10);
-      break;
-    case 1:
-      mirrorStepper.step(10);
-      break;
-    case 2:
-      mirrorStepper.step(10);
-      break;
-    default:
-      Serial.print("Was commanded past the third target");
-      break;
+void launchDebris(){
+  // Launchers hold 10 BB's, so if we've launched less than 11, launch again. Else do nothing.
+  if(debrisLaunched >= 10){
+    //do nothing
   }
-  currentLaserTarget++;
+  else if(debrisLaunched < 10){
+    //Rotate stepper to launch one BB
+    mirrorStepper.step(STEPS_PER_LAUNCH);
+    debrisLaunched++;
+  }
 }
 
-void releaseSMA(){
-  digitalWrite(MOSFET_2_PIN, HIGH);
-  delay(15000); //wait 15 seconds for SMA springs to fully actuate
-  digitalWrite(MOSFET_2_PIN, LOW);
+void turnOnLights(){
+  digitalWrite(SERVO_HEADER_PIN, HIGH);
 }
 
-void homeLaser(){
-  int deadband = 100; //100 chosen arbitrarily, will need to be tested to see what resting sensor reading is
-  int lightSensorReading = 0;
-  int lastReading = 0;
-  lightSensorReading = analogRead(LIGHT_SENSOR_PIN);
-  if ((lightSensorReading < deadband) || (lightSensorReading > lastReading)){
-    mirrorStepper.step(10); // 10 picked arbitrarily, will need tuning
-    delay(100);
-  }
+void turnOffLights(){
+  digitalWrite(SERVO_HEADER_PIN, LOW);
 }
