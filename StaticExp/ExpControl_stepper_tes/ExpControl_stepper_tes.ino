@@ -15,12 +15,15 @@ void setup() {
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
   // Set the speed (in RPM) at which the stepper will turn when you call step()
-  myStepper.setSpeed(75);
+  myStepper.setSpeed(20);
   // Command the stepper to rotate 2000 steps.
-  myStepper.step(2000);
+  //myStepper.step(-513);
+  
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  myStepper.step(47);
+  delay(1000);
 
 }

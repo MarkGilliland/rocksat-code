@@ -27,12 +27,12 @@
 #define LED_PIN 13
 #define SERVO_HEADER_PIN 10
 #define LIGHT_SENSOR_PIN A0 //PC0, need to add header to access this pin
-#define AUTONOMOUS_MODE_ENABLE 0
+#define AUTONOMOUS_MODE_ENABLE 1
 
 //define motor properties:
 #define STEPS_PER_REVOLUTION 513  //for stepper library
 #define STEPS_PER_LAUNCH 47       //roughly 513.0/11.0
-#define MAX_STEPPER_SPEED 60      //probably need to change this value
+#define MAX_STEPPER_SPEED 20      //probably need to change this value
 //declare stepper object
 Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);
 
@@ -109,8 +109,8 @@ void setup() {
   digitalWrite(STEPPER_2_PIN, STEPPER_OFF);
   digitalWrite(STEPPER_3_PIN, STEPPER_OFF);
   digitalWrite(STEPPER_4_PIN, STEPPER_OFF);
-  digitalWrite(MOSFET_1_PIN, MOSFET_OFF);
-  digitalWrite(MOSFET_2_PIN, MOSFET_OFF); 
+  digitalWrite(MOSFET_1_PIN, HIGH);
+  digitalWrite(MOSFET_2_PIN, HIGH); 
 
   //Init the stepper object with an initial speed
   mirrorStepper.setSpeed(MAX_STEPPER_SPEED);
@@ -127,7 +127,7 @@ void loop() {
       //Do nothing until T+85 is reached
     }
     turnOnLaser();
-    homeLaser();
+    //homeLaser();
     releaseSMA();
     delay(1000);
     changeTarget();
@@ -169,9 +169,9 @@ void changeTarget(){
 }
 
 void releaseSMA(){
-  digitalWrite(MOSFET_2_PIN, HIGH);
-  delay(15000); //wait 15 seconds for SMA springs to fully actuate
   digitalWrite(MOSFET_2_PIN, LOW);
+  delay(15000); //wait 15 seconds for SMA springs to fully actuate
+  digitalWrite(MOSFET_2_PIN, HIGH);
 }
 
 void homeLaser(){

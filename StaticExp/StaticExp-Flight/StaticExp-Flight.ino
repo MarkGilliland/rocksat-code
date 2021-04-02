@@ -30,7 +30,7 @@
 //define motor properties:
 #define STEPS_PER_REVOLUTION 513  //for stepper library
 #define STEPS_PER_LAUNCH 47       //roughly 513.0/11.0
-#define MAX_STEPPER_SPEED 60      //probably need to change this value
+#define MAX_STEPPER_SPEED 20      //probably need to change this value
 //declare stepper object
 Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);
 
@@ -129,11 +129,16 @@ void loop() {
     while(millis() < 65000){
       //Do nothing until we reach T+85
     }
-    for(int i = 0; i < 10; i++){
+    launchDebris();
+    delay(10000);
+    turnOnStatic();
+    delay(5000);
+    for(int i = 0; i < 9; i++){
       launchDebris();
       delay(10000);
     }
     digitalWrite(LED_PIN, HIGH);
+    turnOffStatic();
     while(true){
       //Do nothing, program has completed running
     }
