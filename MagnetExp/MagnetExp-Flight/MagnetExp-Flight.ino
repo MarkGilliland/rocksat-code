@@ -28,9 +28,9 @@
 #define AUTONOMOUS_MODE_ENABLE 1
 
 //define motor properties:
-#define STEPS_PER_REVOLUTION 513  //for stepper library
-#define STEPS_PER_LAUNCH 47       //roughly 513.0/11.0
-#define MAX_STEPPER_SPEED 60      //probably need to change this value
+static int STEPS_PER_REVOLUTION = 513;  //for stepper library
+static int STEPS_PER_LAUNCH = 47;       //roughly 513.0/11.0
+static int MAX_STEPPER_SPEED = 20;      //probably need to change this value
 //declare stepper object
 Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);
 
@@ -61,6 +61,7 @@ void receiveCommand(int numBytes){
 void requestCommand(){
   Wire.write(6);
 }
+
 void setup() {
   // Start serial for debugging, comment out for production software
   Serial.begin(9600);
@@ -85,10 +86,10 @@ void setup() {
   pinMode(MOSFET_2_PIN, OUTPUT);
 
   //set all outputs to "off" to start
-  digitalWrite(STEPPER_1_PIN, STEPPER_OFF);
-  digitalWrite(STEPPER_2_PIN, STEPPER_OFF);
-  digitalWrite(STEPPER_3_PIN, STEPPER_OFF);
-  digitalWrite(STEPPER_4_PIN, STEPPER_OFF);
+  //digitalWrite(STEPPER_1_PIN, STEPPER_OFF);
+  //digitalWrite(STEPPER_2_PIN, STEPPER_OFF);
+  //digitalWrite(STEPPER_3_PIN, STEPPER_OFF);
+  //digitalWrite(STEPPER_4_PIN, STEPPER_OFF);
   digitalWrite(MOSFET_1_PIN, MOSFET_OFF);
   digitalWrite(MOSFET_2_PIN, MOSFET_OFF); 
 
@@ -107,7 +108,8 @@ void loop() {
       //Wait until we reach T+85
     }
     for(int i = 0; i < 10; i++){
-      launchDebris();
+      //launchDebris();
+      mirrorStepper.step(STEPS_PER_LAUNCH);
       delay(10000);
     }
     digitalWrite(LED_PIN, HIGH);
