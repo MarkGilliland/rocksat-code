@@ -106,6 +106,7 @@ void setup() {
   //setup MOSFET Pins
   pinMode(MOSFET_1_PIN, OUTPUT);
   pinMode(MOSFET_2_PIN, OUTPUT);
+  pinMode(SERVO_HEADER_PIN,OUTPUT);
 
   //set all outputs to "off" to start
   digitalWrite(STEPPER_1_PIN, STEPPER_OFF);
@@ -125,7 +126,7 @@ void loop() {
   }
   if(AUTONOMOUS_MODE_ENABLE == 1){
     //Turn on pi camera lights
-    digitalWrite(SERVO_HEADER_PIN, HIGH);
+    turnOnLights();
     while(millis() < 65000){
       //Do nothing until we reach T+85
     }

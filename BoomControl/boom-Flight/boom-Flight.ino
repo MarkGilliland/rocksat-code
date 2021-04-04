@@ -249,7 +249,7 @@ void turnOnCamera(){
 
 void turnOffCamera(){
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
-  delay(5000); //2000
+  delay(3000); //2000
   digitalWrite(CAMERA_CONTROL_PIN, LOW); 
 }
 
