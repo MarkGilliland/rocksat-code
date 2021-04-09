@@ -169,9 +169,9 @@ void changeTarget(){
 }
 
 void releaseSMA(){
-  digitalWrite(MOSFET_2_PIN, LOW);
-  delay(15000); //wait 15 seconds for SMA springs to fully actuate
   digitalWrite(MOSFET_2_PIN, HIGH);
+  delay(15000); //wait 15 seconds for SMA springs to fully actuate
+  digitalWrite(MOSFET_2_PIN, LOW);
 }
 
 void homeLaser(){

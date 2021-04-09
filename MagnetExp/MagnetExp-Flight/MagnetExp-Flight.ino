@@ -107,6 +107,7 @@ void loop() {
     while(millis() < 65000){
       //Wait until we reach T+85
     }
+    digitalWrite(MOSFET_1_PIN,HIGH);
     for(int i = 0; i < 10; i++){
       //launchDebris();
       mirrorStepper.step(STEPS_PER_LAUNCH);
