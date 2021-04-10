@@ -62,8 +62,8 @@ void receiveCommand(int numBytes){
       changeTarget();
       break;
     case 51: //0x33
-      //release SMA springs
-      releaseSMA();
+      //heat SMA springs
+      heatSMA();
       break;
     case 56: //0x38
       //Home laser
@@ -128,7 +128,9 @@ void loop() {
     }
     turnOnLaser();
     //homeLaser();
-    releaseSMA();
+    heatSMA();
+    delay(18000);  // Wait 18 seconds for SMA to fully retract
+    coolSMA();
     delay(1000);
     changeTarget();
     delay(15000);
@@ -142,11 +144,11 @@ void loop() {
 }
 
 void turnOnLaser(){
-  digitalWrite(MOSFET_1_PIN, HIGH);
+  digitalWrite(MOSFET_2_PIN, HIGH);
 }
 
 void turnOffLaser(){
-  digitalWrite(MOSFET_1_PIN, LOW);
+  digitalWrite(MOSFET_2_PIN, LOW);
 }
 
 void changeTarget(){
@@ -168,10 +170,12 @@ void changeTarget(){
   currentLaserTarget++;
 }
 
-void releaseSMA(){
-  digitalWrite(MOSFET_2_PIN, HIGH);
-  delay(15000); //wait 15 seconds for SMA springs to fully actuate
-  digitalWrite(MOSFET_2_PIN, LOW);
+void heatSMA(){
+  digitalWrite(MOSFET_1_PIN, HIGH);
+}
+
+void coolSMA(){
+  digitalWrite(MOSFET_1_PIN, LOW);
 }
 
 void homeLaser(){
