@@ -28,9 +28,9 @@
 #define AUTONOMOUS_MODE_ENABLE 1
 
 //define motor properties:
-static int STEPS_PER_REVOLUTION = 513;  //for stepper library
-static int STEPS_PER_LAUNCH = 47;       //roughly 513.0/11.0
-static int MAX_STEPPER_SPEED = 20;      //probably need to change this value
+static int STEPS_PER_REVOLUTION = 2048;  //for stepper library
+static int STEPS_PER_LAUNCH = 187;       //roughly 513.0/11.0
+static int MAX_STEPPER_SPEED = 16;      //probably need to change this value
 //declare stepper object
 Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);
 
