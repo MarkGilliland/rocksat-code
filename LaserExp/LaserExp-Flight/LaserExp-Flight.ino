@@ -27,7 +27,6 @@
 #define LED_PIN 13
 #define SERVO_HEADER_PIN 10
 #define LIGHT_SENSOR_PIN A0 //PC0, need to add header to access this pin
-#define AUTONOMOUS_MODE_ENABLE 1
 
 //define motor properties:
 #define STEPS_PER_REVOLUTION 513  //change this to 2048 for the beefier motor
@@ -109,8 +108,8 @@ void setup() {
   digitalWrite(STEPPER_2_PIN, STEPPER_OFF);
   digitalWrite(STEPPER_3_PIN, STEPPER_OFF);
   digitalWrite(STEPPER_4_PIN, STEPPER_OFF);
-  digitalWrite(MOSFET_1_PIN, HIGH);
-  digitalWrite(MOSFET_2_PIN, HIGH); 
+  digitalWrite(MOSFET_1_PIN, MOSFET_OFF);
+  digitalWrite(MOSFET_2_PIN, MOSFET_OFF); 
 
   //Init the stepper object with an initial speed
   mirrorStepper.setSpeed(MAX_STEPPER_SPEED);
@@ -139,11 +138,11 @@ void loop() {
 
 
 void turnOnLaser(){
-  digitalWrite(MOSFET_2_PIN, HIGH);
+  digitalWrite(MOSFET_2_PIN, MOSFET_ON);
 }
 
 void turnOffLaser(){
-  digitalWrite(MOSFET_2_PIN, LOW);
+  digitalWrite(MOSFET_2_PIN, MOSFET_OFF);
 }
 
 void changeTarget(int target){
@@ -152,11 +151,11 @@ void changeTarget(int target){
 }
 
 void heatSMA(){
-  digitalWrite(MOSFET_1_PIN, HIGH);
+  digitalWrite(MOSFET_1_PIN, MOSFET_ON);
 }
 
 void coolSMA(){
-  digitalWrite(MOSFET_1_PIN, LOW);
+  digitalWrite(MOSFET_1_PIN, MOSFET_OFF);
 }
 
 void homeLaser(){
