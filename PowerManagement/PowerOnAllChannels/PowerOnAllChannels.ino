@@ -76,56 +76,56 @@ void refreshMonitor(){
   digitalWrite(MUX_SEL_C, 0);
   digitalWrite(MUX_SEL_B, 0);
   digitalWrite(MUX_SEL_A, 0);
-  delay(10);
+  delay(2);
   camCurrent_12V = countsToAmps(analogRead(MUX_AIN_1));
   staCurrent_5VD = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 001 channels to variables
   digitalWrite(MUX_SEL_C, 0);
   digitalWrite(MUX_SEL_B, 0);
   digitalWrite(MUX_SEL_A, 1);
-  delay(10);
+  delay(2);
   magCurrent_5VA = countsToAmps(analogRead(MUX_AIN_1));
   magCurrent_5VD = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 010 channels to variables
   digitalWrite(MUX_SEL_C, 0);
   digitalWrite(MUX_SEL_B, 1);
   digitalWrite(MUX_SEL_A, 0);
-  delay(10);
+  delay(2);
   txCurrent_5VA = countsToAmps(analogRead(MUX_AIN_1));
   camCurrent_5VD = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 011 channels to variables
   digitalWrite(MUX_SEL_C, 0);
   digitalWrite(MUX_SEL_B, 1);
   digitalWrite(MUX_SEL_A, 1);
-  delay(10);
+  delay(2);
   staCurrent_12V = countsToAmps(analogRead(MUX_AIN_1));
   camCurrent_5VA = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 100 channels to variables
   digitalWrite(MUX_SEL_C, 1);
   digitalWrite(MUX_SEL_B, 0);
   digitalWrite(MUX_SEL_A, 0);
-  delay(10);
+  delay(2);
   lasCurrent_5VA = countsToAmps(analogRead(MUX_AIN_1));
   txCurrent_5VD = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 101 channels to variables
   digitalWrite(MUX_SEL_C, 1);
   digitalWrite(MUX_SEL_B, 0);
   digitalWrite(MUX_SEL_A, 1);
-  delay(10);
+  delay(2);
   //null = countsToAmps(analogRead(MUX_AIN_1)); This is not used
   temp_5VA = countsToDegrees(analogRead(MUX_AIN_2));
   //Read both 110 channels to variables
   digitalWrite(MUX_SEL_C, 1);
   digitalWrite(MUX_SEL_B, 1);
   digitalWrite(MUX_SEL_A, 0);
-  delay(10);
+  delay(2);
   staCurrent_5VA = countsToAmps(analogRead(MUX_AIN_1));
   lasCurrent_5VD = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 111 channels to variables 
   digitalWrite(MUX_SEL_C, 1);
   digitalWrite(MUX_SEL_B, 1);
   digitalWrite(MUX_SEL_A, 1);
-  delay(10);
+  delay(2);
   temp_12V = countsToDegrees(analogRead(MUX_AIN_1));
   temp_5VA = countsToDegrees(analogRead(MUX_AIN_2));
   //All temps and currents acquired. Verify that they are within bounds
@@ -174,7 +174,7 @@ void refreshMonitor(){
 void setup() {
   // Start serial interface
   Serial.begin(115200);
-  
+  delay(10000);
   //Set all enable lines as outputs
   for(int i = 0; i < 5; i++){
     pinMode(ENABLES_5VD[i], OUTPUT);
@@ -222,4 +222,9 @@ void setup() {
 void loop() {
   //Check for faults
   refreshMonitor();
+  Serial.print("Laser 5VA Current: ");
+  Serial.println(lasCurrent_5VA);
+  Serial.print("Laser 12V Current: ");
+  Serial.println(staCurrent_12V);
+  delay(250);
 }

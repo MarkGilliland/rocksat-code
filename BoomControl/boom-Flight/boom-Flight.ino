@@ -78,11 +78,11 @@ void receiveCommand(int numBytes){
   currentCommand = 0;
 }
 
-
-void requestCommand(){
-  Wire.write(6);
-}
 */
+void requestCommand(){
+  Wire.write(5);
+}
+
 
 void setup() {
   // Start serial for debugging, comment out for production software

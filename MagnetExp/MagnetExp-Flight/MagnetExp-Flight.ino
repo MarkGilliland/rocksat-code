@@ -59,7 +59,7 @@ void receiveCommand(int numBytes){
 }
 
 void requestCommand(){
-  Wire.write(6);
+  Wire.write(4);
 }
 
 void setup() {
