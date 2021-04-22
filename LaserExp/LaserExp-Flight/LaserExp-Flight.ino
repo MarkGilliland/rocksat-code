@@ -30,11 +30,11 @@
 #define AUTONOMOUS_MODE_ENABLE 1
 
 //define motor properties:
-#define STEPS_PER_REVOLUTION 513  //for stepper library
-#define STEPS_PER_LAUNCH 47       //roughly 513.0/11.0
-#define MAX_STEPPER_SPEED 20      //probably need to change this value
+#define STEPS_PER_REVOLUTION 513  //change this to 2048 for the beefier motor
+#define MAX_STEPPER_SPEED 20      //change this to 16 for the beefier motor
 //declare stepper object
 Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);
+//Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_2_PIN, STEPPER_4_PIN, STEPPER_1_PIN, STEPPER_3_PIN);  // SWITCH TO THIS FOR BEEFIER MOTOR
 
 //Global Variables
 int debrisLauncherDegrees = 0;
@@ -94,7 +94,7 @@ void setup() {
   Wire.onReceive(receiveCommand); 
   // When a request for data is received from the master, jump to requestCommand function and send
   Wire.onRequest(requestCommand);
-  
+
   // Setup motor driver pins
   pinMode(STEPPER_1_PIN, OUTPUT);
   pinMode(STEPPER_2_PIN, OUTPUT);
@@ -116,24 +116,27 @@ void setup() {
   mirrorStepper.setSpeed(MAX_STEPPER_SPEED);
 }
 
+
+
 void loop() {
-  //Handle all functions locally
-  while(millis() < 65000){
-    //Do nothing until T+85 is reached
-  }
-  turnOnLaser();
-  homeLaser();
+  while(millis() < 65000){}                             // Wait till T+85 to act. (Board powers on at T+20, so 65000 is 85s.)
+  homeLaser();                                          
   heatSMA();
+  delay(30000);                                         // Wait 30s for debris carrier to open.  Springs will still be powered even after this.
+  turnOnLaser();
   changeTarget(0);
-  delay(15000);
+  delay(15000);                                         // Try to move the first target for 15s.
   changeTarget(1);
-  delay(15000);
+  delay(15000);                                         // Try to move the second target for 15s.
   changeTarget(2);
-  delay(15000);
-  turnOffLaser();
+  delay(15000);                                         // Try to move the third target for 15s.
+  turnOffLaser();                             
   coolSMA();
-  while(true){};
+  while(true){};                                        // Turn everything off and become idle.  Completion time at ~ T+160.
 }
+
+
+
 
 void turnOnLaser(){
   digitalWrite(MOSFET_2_PIN, HIGH);
@@ -157,15 +160,16 @@ void coolSMA(){
 }
 
 void homeLaser(){
-
+  mirrorStepper.step(-STEPS_PER_REVOLUTION/8);
+  currentPos = 0;
 
   
-  int deadband = 100; //100 chosen arbitrarily, will need to be tested to see what resting sensor reading is
-  int lightSensorReading = 0;
-  int lastReading = 0;
-  lightSensorReading = analogRead(LIGHT_SENSOR_PIN);
-  if ((lightSensorReading < deadband) || (lightSensorReading > lastReading)){
-    mirrorStepper.step(10); // 10 picked arbitrarily, will need tuning
-    delay(100);
-  }
+//  int deadband = 100; //100 chosen arbitrarily, will need to be tested to see what resting sensor reading is
+//  int lightSensorReading = 0;
+//  int lastReading = 0;
+//  lightSensorReading = analogRead(LIGHT_SENSOR_PIN);
+//  if ((lightSensorReading < deadband) || (lightSensorReading > lastReading)){
+//    mirrorStepper.step(10); // 10 picked arbitrarily, will need tuning
+//    delay(100);
+//  }
 }
