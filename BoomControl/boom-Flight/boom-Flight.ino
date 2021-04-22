@@ -213,8 +213,11 @@ void loop() {
         digitalWrite(MOTOR_1_PIN_A, LOW);
         digitalWrite(MOTOR_1_PIN_B, LOW);
         Serial.println("Sufficient time elapsed, Motor off.");
-        camBoomExtended = true;
+        camBoomExtended = false;
       }
+    }
+    while(true){
+      //Do nothing
     }
   }
 }

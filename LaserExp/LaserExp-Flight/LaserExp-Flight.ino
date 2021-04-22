@@ -38,7 +38,7 @@ Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPE
 
 //Global Variables
 int debrisLauncherDegrees = 0;
-byte currentLaserTarget = 0;
+int currentPos = 0;
 
 
 //Define function that is run whenever the Arduino receives a command from the master
@@ -117,30 +117,22 @@ void setup() {
 }
 
 void loop() {
-  //This does nothing, all functionality done by onReceive and related functions
-  if(AUTONOMOUS_MODE_ENABLE == 0){
-    //Do nothing, all functions controlled by I2C
+  //Handle all functions locally
+  while(millis() < 65000){
+    //Do nothing until T+85 is reached
   }
-  if(AUTONOMOUS_MODE_ENABLE == 1){
-    //Handle all functions locally
-    while(millis() < 65000){
-      //Do nothing until T+85 is reached
-    }
-    turnOnLaser();
-    //homeLaser();
-    heatSMA();
-    delay(18000);  // Wait 18 seconds for SMA to fully retract
-    coolSMA();
-    delay(1000);
-    changeTarget();
-    delay(15000);
-    changeTarget();
-    delay(15000);
-    changeTarget();
-    delay(15000);
-    turnOffLaser();
-  }
-  
+  turnOnLaser();
+  homeLaser();
+  heatSMA();
+  changeTarget(0);
+  delay(15000);
+  changeTarget(1);
+  delay(15000);
+  changeTarget(2);
+  delay(15000);
+  turnOffLaser();
+  coolSMA();
+  while(true){};
 }
 
 void turnOnLaser(){
@@ -151,23 +143,9 @@ void turnOffLaser(){
   digitalWrite(MOSFET_2_PIN, LOW);
 }
 
-void changeTarget(){
-  switch (currentLaserTarget) {
-    case 0:
-      //Do nothing
-      //mirrorStepper.step(10);
-      break;
-    case 1:
-      mirrorStepper.step(10);
-      break;
-    case 2:
-      mirrorStepper.step(10);
-      break;
-    default:
-      Serial.print("Was commanded past the third target");
-      break;
-  }
-  currentLaserTarget++;
+void changeTarget(int target){
+  mirrorStepper.step(target*10-currentPos);
+  currentPos = target*10;
 }
 
 void heatSMA(){
@@ -179,6 +157,9 @@ void coolSMA(){
 }
 
 void homeLaser(){
+
+
+  
   int deadband = 100; //100 chosen arbitrarily, will need to be tested to see what resting sensor reading is
   int lightSensorReading = 0;
   int lastReading = 0;
