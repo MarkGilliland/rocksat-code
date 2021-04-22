@@ -79,7 +79,7 @@ void receiveCommand(int numBytes){
 
 //Function that is executed when master requests data
 void requestCommand(){
-  Wire.write(6);
+  Wire.write(2);
 }
 
 void setup() {

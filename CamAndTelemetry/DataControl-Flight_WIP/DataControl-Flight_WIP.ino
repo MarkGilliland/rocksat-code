@@ -12,6 +12,7 @@
 
 //Include necessary libraries
 #include <Wire.h>
+
 //Constant pin declarations:
 const int LED_PIN = 13;
 const int SHIFT_OUT = 3;
@@ -26,12 +27,54 @@ const int TE_2 = 65000;     //Time from board power on that TE-2 line (actuators
 const int T_OFF = 315000;   //(Assumed) time that the payload should turn off
 const int STA_PWR_ON = 125000; //Time that static experiment powers on
 int upTime = 0;
-
+volatile byte lasTelemData = 0;
+volatile byte staTelemData = 0;
+volatile byte magTelemData = 0;
+volatile byte boomTelemData = 0;
+volatile bool lasStaOrMagBoom = 0;
+volatile long timesIntTriggered = 0;
+ 
 //Array of experiment statuses
-int expStatus[4];
+volatile int expStatus[4];
 
 void parallelOut(){
   //Write code to clock out parallel data here.
+  if(timesIntTriggered == 100){
+    requestExpBrdData();
+    digitalWrite(SHIFT_LAT, LOW);
+    if(lasStaOrMagBoom == 0){
+      shiftOut(SHIFT_OUT, SHIFT_CLK, MSBFIRST, lasTelemData);
+      shiftOut(SHIFT_OUT, SHIFT_CLK, MSBFIRST, staTelemData);
+    }
+    if(lasStaOrMagBoom == 1){
+      shiftOut(SHIFT_OUT, SHIFT_CLK, MSBFIRST, magTelemData);
+      shiftOut(SHIFT_OUT, SHIFT_CLK, MSBFIRST, boomTelemData);
+    }
+    digitalWrite(SHIFT_LAT, HIGH);
+    Serial2.write(lasTelemData);
+    Serial2.write(staTelemData);
+    Serial2.write(magTelemData);
+    Serial2.write(boomTelemData);
+    timesIntTriggered = 0;
+  }
+    timesIntTriggered++;
+}
+
+void requestExpBrdData(){
+  //noInterrupts();
+  //Request data from laser board
+  Wire.requestFrom(0x02, 1);
+  lasTelemData = Wire.read();
+  //Request data from static board
+  Wire.requestFrom(0x03, 1);
+  staTelemData = Wire.read();
+  //Request data from the magnet board
+  Wire.requestFrom(0x04, 1);
+  magTelemData = Wire.read();
+  //Request data from the Boom board
+  Wire.requestFrom(0x05, 1);
+  boomTelemData = Wire.read();
+  //interrupts();
 }
 
 void setup() {
@@ -40,7 +83,7 @@ void setup() {
   // Start debug serial interface
   Serial.begin(115200);
   // Start RS-232 serial interface
-  Serial2.begin(19200);
+  Serial2.begin(19200, SERIAL_8N1);
   
   //Start I2C interface to experiments as bus master
   Wire.begin();
@@ -51,11 +94,16 @@ void setup() {
   pinMode(PDB_STROBE, INPUT);
   pinMode(LED_PIN, OUTPUT);
 
+  //Set up PWM on pin 11, attached to pin 12 to trigger pin change interrupt
+  analogWrite(11, 1);
+  attachInterrupt(12, parallelOut, RISING);
+  
   //Attach interupt on Parallel data bus strobe pin
-  //attachInterrupt(PDB_STROBE, parallelOut, Rising);
+  //attachInterrupt(PDB_STROBE, parallelOut, RISING);
   
   //Begin status check of experiment control boards
   //A response of ASCII 6 'Acknowledge' shows life
+  /*
   for (int i = 0; i < 4; i++){
     Wire.requestFrom((i+1), 1);
     expStatus[i] = Wire.read();
@@ -63,6 +111,7 @@ void setup() {
   if((expStatus[0] == 6) && (expStatus[1] = 6) && (expStatus[2] == 6) && (expStatus[3] == 6)){
     Serial.println("All boards alive and well.");
   }
+  */
 
 }
 
