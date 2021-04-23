@@ -29,11 +29,11 @@
 #define LIGHT_SENSOR_PIN A0 //PC0, need to add header to access this pin
 
 //define motor properties:
-#define STEPS_PER_REVOLUTION 513  //change this to 2048 for the beefier motor
-#define MAX_STEPPER_SPEED 20      //change this to 16 for the beefier motor
+#define STEPS_PER_REVOLUTION 2048  //change this to 513 for the weaker motor
+#define MAX_STEPPER_SPEED 16      //change this to 20 for the weaker motor
 //declare stepper object
-Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);
-//Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_2_PIN, STEPPER_4_PIN, STEPPER_1_PIN, STEPPER_3_PIN);  // SWITCH TO THIS FOR BEEFIER MOTOR
+//Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);  // This is for the weaker motor
+Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_2_PIN, STEPPER_4_PIN, STEPPER_1_PIN, STEPPER_3_PIN);  // SWITCH TO THIS FOR BEEFIER MOTOR
 
 //Global Variables
 int debrisLauncherDegrees = 0;
@@ -161,14 +161,4 @@ void coolSMA(){
 void homeLaser(){
   mirrorStepper.step(-STEPS_PER_REVOLUTION/8);
   currentPos = 0;
-
-  
-//  int deadband = 100; //100 chosen arbitrarily, will need to be tested to see what resting sensor reading is
-//  int lightSensorReading = 0;
-//  int lastReading = 0;
-//  lightSensorReading = analogRead(LIGHT_SENSOR_PIN);
-//  if ((lightSensorReading < deadband) || (lightSensorReading > lastReading)){
-//    mirrorStepper.step(10); // 10 picked arbitrarily, will need tuning
-//    delay(100);
-//  }
 }
