@@ -50,11 +50,28 @@ void parallelOut(){
       shiftOut(SHIFT_OUT, SHIFT_CLK, MSBFIRST, magTelemData);
       shiftOut(SHIFT_OUT, SHIFT_CLK, MSBFIRST, boomTelemData);
     }
+    //Shifting parallel data complete
     digitalWrite(SHIFT_LAT, HIGH);
+    //Write data to serial busses
+    //Write to rocket UART
+    Serial2.write("L:");
     Serial2.write(lasTelemData);
+    Serial2.write("S:");
     Serial2.write(staTelemData);
+    Serial2.write("M:");
     Serial2.write(magTelemData);
+    Serial2.write("B:");
     Serial2.write(boomTelemData);
+    //Write to debug UART
+    Serial.write("L:");
+    Serial.write(lasTelemData);
+    Serial.write("S:");
+    Serial.write(staTelemData);
+    Serial.write("M:");
+    Serial.write(magTelemData);
+    Serial.write("B:");
+    Serial.write(boomTelemData);
+    
     timesIntTriggered = 0;
   }
     timesIntTriggered++;
@@ -93,8 +110,13 @@ void setup() {
   //Set up input/output pins
   pinMode(PDB_STROBE, INPUT);
   pinMode(LED_PIN, OUTPUT);
+  //Set pin 11 as output for PWM
+  pinMode(11, OUTPUT);
+  //Set pin 12 as input for interrupt
+  pinMode(12, INPUT);
 
   //Set up PWM on pin 11, attached to pin 12 to trigger pin change interrupt
+  //Pins 11 and 12 MUST be bridged for this to work
   analogWrite(11, 1);
   attachInterrupt(12, parallelOut, RISING);
   

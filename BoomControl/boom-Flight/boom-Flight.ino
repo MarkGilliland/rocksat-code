@@ -34,13 +34,14 @@
 #define AUTONOMOUS_MODE_ENABLE 1
 
 //define global variables used in the program
-long encoderCounts = 0;
+volatile long encoderCounts = 0;
 long cameraRotations = 0;
 long cameraPosition = 0;
 long camExtensionTime = 0;
 long camRetractionTime = 0;
 long flightTime = 0;
 bool camBoomExtended = false;
+volatile byte I2CreturnValue = 0;
 
 //Setup motor encoder
 Encoder myEnc(ENCODER_1_PIN, ENCODER_2_PIN);
@@ -80,7 +81,8 @@ void receiveCommand(int numBytes){
 
 */
 void requestCommand(){
-  Wire.write(5);
+  I2CreturnValue = map(myEnc.read(), 0, 119000, 0, 100);
+  Wire.write(I2CreturnValue);
 }
 
 
@@ -191,7 +193,7 @@ void loop() {
       //Do nothing until T+275
     }
     retractCamBoom();
-    //Turn on 360 camera
+    //Turn off 360 camera
     turnOffCamera();
     //Update camExtensionTime to current time before entering while loop
     camExtensionTime = millis();
@@ -212,7 +214,7 @@ void loop() {
         digitalWrite(MOTORS_ENABLE_PIN, LOW);
         digitalWrite(MOTOR_1_PIN_A, LOW);
         digitalWrite(MOTOR_1_PIN_B, LOW);
-        Serial.println("Sufficient time elapsed, Motor off.");
+        Serial.println("Boom should be retracted. Stopped by time limit.");
         camBoomExtended = false;
       }
     }

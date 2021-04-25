@@ -28,17 +28,18 @@
 #define AUTONOMOUS_MODE_ENABLE 1
 
 //define motor properties:
-static int STEPS_PER_REVOLUTION = 2048;  //for stepper library
-static int STEPS_PER_LAUNCH = 187;       //roughly 513.0/11.0
-static int MAX_STEPPER_SPEED = 16;      //probably need to change this value
+#define STEPS_PER_REVOLUTION 2048    //for stepper library
+#define STEPS_PER_LAUNCH 187         //roughly 2048/11.0
+#define MAX_STEPPER_SPEED 11         //probably need to change this value
 //declare stepper object
 Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);
 
 //Global Variables
-int debrisLauncherDegrees = 0;
-int debrisLaunched = 0;
+volatile int debrisLauncherDegrees = 0;
+volatile byte debrisLaunched = 0;
 
 //Define function that is run whenever the Arduino receives a command from the master
+/*
 void receiveCommand(int numBytes){
   int currentCommand = 0; //Initialize variable that will temporarily hold command
   while(Wire.available() > 0){
@@ -57,9 +58,10 @@ void receiveCommand(int numBytes){
   //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
   currentCommand = 0;
 }
+*/
 
 void requestCommand(){
-  Wire.write(4);
+  Wire.write(debrisLaunched);
 }
 
 void setup() {
@@ -70,11 +72,7 @@ void setup() {
   // Join I2C bus as a slave with address 0x02 for Laser board, 0x03 for Static board,
   // 0x04 for Magnet board, 0x05 for Boom control board.
   Wire.begin(0x04);          
-  if(AUTONOMOUS_MODE_ENABLE == 0){
-    // When a command is received from the master, jump to the receiveCommand function
-    Wire.onReceive(receiveCommand); 
-    Wire.onRequest(requestCommand);
-  }
+  Wire.onRequest(requestCommand);
   
   // Setup motor driver pins
   pinMode(STEPPER_1_PIN, OUTPUT);
@@ -121,13 +119,7 @@ void loop() {
 }
 
 void launchDebris(){
-  // Launchers hold 10 BB's, so if we've launched less than 11, launch again. Else do nothing.
-  if(debrisLaunched >= 10){
-    //do nothing
-  }
-  else if(debrisLaunched < 10){
-    //Rotate stepper to launch one BB
-    mirrorStepper.step(STEPS_PER_LAUNCH);
-    debrisLaunched++;
-  }
+  //Rotate stepper to launch one BB
+  mirrorStepper.step(STEPS_PER_LAUNCH);
+  debrisLaunched++;
 }

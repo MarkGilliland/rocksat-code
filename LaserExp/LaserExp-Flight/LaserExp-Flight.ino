@@ -41,6 +41,7 @@ int currentPos = 0;
 
 
 //Define function that is run whenever the Arduino receives a command from the master
+/*
 void receiveCommand(int numBytes){
   int currentCommand = 0; //Initialize variable that will temporarily hold command
   while(Wire.available() > 0){
@@ -75,10 +76,10 @@ void receiveCommand(int numBytes){
   //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
   currentCommand = 0;
 }
-
+*/
 //Function that is executed when master requests data
 void requestCommand(){
-  Wire.write(2);
+  Wire.write(currentPos);
 }
 
 void setup() {
@@ -90,7 +91,7 @@ void setup() {
   // 0x04 for Magnet board, 0x05 for Boom control board.
   Wire.begin(0x02);          
   // When a command is received from the master, jump to the receiveCommand function and execute the proper command
-  Wire.onReceive(receiveCommand); 
+  //Wire.onReceive(receiveCommand); 
   // When a request for data is received from the master, jump to requestCommand function and send
   Wire.onRequest(requestCommand);
 

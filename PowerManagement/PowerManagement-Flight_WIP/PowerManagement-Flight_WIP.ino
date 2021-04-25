@@ -49,6 +49,7 @@ const int ENABLES_5VD[] = {ENABLE_MAG_5VD, ENABLE_STA_5VD, ENABLE_TX_5VD,
                            ENABLE_LAS_5VD, ENABLE_CAM_5VD };
 
 //Global variables & constants
+#define FLIGHT_MODE 1    //FLIGHT_MODE == 1 accounts for T-120s GSE turn on, FLIGHT_MODE == 0 ignores T-120s turn on for testing
 const int TE_1 = 20000;  //Time that TE-1 line (computers) is turned on, in milliseconds
 const int TE_2 = 85000;  //Time that TE-2 line (actuators) is turned on, in milliseconds
 const int T_OFF = 335000;//(Assumed) time that the payload should turn off
@@ -202,6 +203,13 @@ void setup() {
 }
 
 void loop() {
+  if(FLIGHT_MODE == 1){
+    //Delay for 120 seconds so that T+0 lines up
+    delay(120000);
+  }
+  else if(FLIGHT_MODE == 0){
+    //Continue immediately, for testing purposes
+  }
   refreshMonitor();
   upTime = millis();
   //Check if T_OFF has been reached, and turn off if true
@@ -242,6 +250,4 @@ void loop() {
     //Set global flag to show that actuator outputs are on
     TE_2_Active = true; 
   }
-  
-
 }
