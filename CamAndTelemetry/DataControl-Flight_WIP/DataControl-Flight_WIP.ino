@@ -24,7 +24,7 @@ const int PDB_STROBE = 22;
 //Global variables and constants
 const int TE_1 = 0;         //Time from board power on that TE-1 line (computers) is turned on, in milliseconds
 const int TE_2 = 65000;     //Time from board power on that TE-2 line (actuators) is turned on, in milliseconds
-const int T_OFF = 315000;   //(Assumed) time that the payload should turn off
+const int T_OFF = 335000;   //(Assumed) time that the payload should turn off
 const int STA_PWR_ON = 125000; //Time that static experiment powers on
 int upTime = 0;
 volatile byte lasTelemData = 0;
@@ -39,7 +39,7 @@ volatile int expStatus[4];
 
 void parallelOut(){
   //Write code to clock out parallel data here.
-  if(timesIntTriggered == 100){
+  if(timesIntTriggered == 130){
     requestExpBrdData();
     digitalWrite(SHIFT_LAT, LOW);
     if(lasStaOrMagBoom == 0){
@@ -138,145 +138,7 @@ void setup() {
 }
 
 void loop() {
-  while(millis() < 70000){
-   //do nothing
-  }
-  Serial.println("Turning on camera");
-  //Turn on madv360 camera
-  Wire.beginTransmission(0x05); //Boom control board
-  Wire.write(0x1A);             //Turn on camera
-  Wire.endTransmission();
-
-  //Switch to video mode
-  Wire.beginTransmission(0x05); //Boom control board
-  Wire.write(0x16);             //Switch to video mode
-  Wire.endTransmission();
-
-  //Turn on M lights
-  Serial.println("Turn on M LEDS");
-  Wire.beginTransmission(0x05); //Boom control board
-  Wire.write(0x55);             //Turn on M lights
-  Wire.endTransmission();
-  
-  //wait 10 seconds
-  while(millis() < 80000){
-    //do nothing 
-  }
-
-  Wire.beginTransmission(0x05); //Boom control board
-  Wire.write(0x15);             //Stop recording video
-  Wire.endTransmission();
-  
-  //Stay in this loop until T+85 has been reached
-  while(millis() < TE_2){
-    //do nothing
-  }
-  
-  Serial.println("T+85 reached");
-  //Switch to photo mode
-  Wire.beginTransmission(0x05); //Boom control board
-  Wire.write(0x16);             //Switch to photo mode
-  Wire.endTransmission();
-
-  //Turn on pi camera lights
-  Serial.println("Turn on Pi camera lights");
-  Wire.beginTransmission(0x04); //Magnet control board
-  Wire.write(0x4C);             //Turn on Pi camera lights
-  Wire.endTransmission();
-  
-  //TE-2 has now been reached, begin commanding experiments 
-  Wire.beginTransmission(0x02); //Laser control board
-  Wire.write(0x38);             //Home laser
-  Wire.endTransmission();
-
-  Wire.beginTransmission(0x05); //Boom control board
-  Wire.write(0x0B);             //Extend Camera boom
-  Wire.endTransmission();
-
-  Wire.beginTransmission(0x04); //Magnet control board
-  Wire.write(0x4C);             //Turn on Pi camera lights
-  Wire.endTransmission();
-
-  //Wait until closer to apogee, this will need to be tuned
-  while(millis() < 133000){
-    //do nothing, wait until we are closer to apogee
-  }
-  Serial.println("T+133 reached");
-  
-  //Turn on static generator
-  Serial.println("Turn on static generator");
-  Wire.beginTransmission(0x03); //Magnet control board
-  Wire.write(0x3D);             //Turn on Pi camera lights
-  Wire.endTransmission();
-  delay(1000);
-
-  Serial.println("Launching debris");
-  //Launch the 10 BBs from Static and magnet experiment
-  for(int i = 0; i < 10; i++){
-    Wire.beginTransmission(0x03); //Static control board
-    Wire.write(0x47);             //Launch debris
-    Wire.endTransmission();
-    Wire.beginTransmission(0x04); //Magnet control board
-    Wire.write(0x47);             //Launch debris
-    Wire.endTransmission();
-  }
-  
-  //Prepare laser by releasing targets
-  Serial.println("Release SMA springs");
-  Wire.beginTransmission(0x02); //Laser control board
-  Wire.write(0x33);             //Release SMA springs
-  Wire.endTransmission();
-
-  //Aim at first target
-  Wire.beginTransmission(0x02); //Laser control board
-  Wire.write(0x2E);             //Aim towards first target
-  Wire.endTransmission();
-  delay(10000);
-
-  //Lase the first target
-  Wire.beginTransmission(0x02); //Laser control board
-  Wire.write(0x24);             //Turn on laser
-  Wire.endTransmission();
-  delay(30000);
-  Wire.beginTransmission(0x02); //Laser control board
-  Wire.write(0x29);             //Turn off laser
-  Wire.endTransmission();
-
-  //Move to and lase the second target
-  Wire.beginTransmission(0x02); //Laser control board
-  Wire.write(0x2E);             //Change laser target
-  Wire.endTransmission();
-  delay(1000);
-  Wire.beginTransmission(0x02); //Laser control board
-  Wire.write(0x24);             //Turn on laser
-  Wire.endTransmission();
-  delay(30000);
-  Wire.beginTransmission(0x02); //Laser control board
-  Wire.write(0x29);             //Turn off laser
-  Wire.endTransmission();
-
-  //Move to and lase the third target
-  Wire.beginTransmission(0x02); //Laser control board
-  Wire.write(0x2E);             //Change laser target
-  Wire.endTransmission();
-  delay(1000);
-  Wire.beginTransmission(0x02); //Laser control board
-  Wire.write(0x24);             //Turn on laser
-  Wire.endTransmission();
-  delay(30000);  
-  Wire.beginTransmission(0x02); //Laser control board
-  Wire.write(0x29);             //Turn off laser
-  Wire.endTransmission();
-
-  while(millis() < 275000){
-    //Do nothing until we reach T+275 
-  }
-  Serial.println("T+275 reached");
-  Wire.beginTransmission(0x05); //Boom control board
-  Wire.write(0x10);             //Retract Camera boom
-  Wire.endTransmission();
-  
-
+  //All boards running autonomously so all the data board does is handle telemetry
   //While loop that runs once the experiments have run their course.
   while(true){
     //Do nothing  

@@ -18,17 +18,18 @@
 #define ENCODER_1_PIN 2
 #define ENCODER_2_PIN 9
 #define LIMIT_SWITCH_1 4
-#define LIMIT_SWITCH_2 5
-#define LIMIT_SWITCH_3 6
-#define LIMIT_SWITCH_4 7
+//#define LIMIT_SWITCH_2 5
+//#define LIMIT_SWITCH_3 6
+//#define LIMIT_SWITCH_4 7
 #define MOTORS_ENABLE_PIN 10 
 #define MOTOR_1_PIN_A A0
 #define MOTOR_1_PIN_B A1
 #define MOTOR_2_PIN_A A2
 #define MOTOR_2_PIN_B A3
-#define CAMERA_CONTROL_PIN 3 //Camera attached to Servo header, D3
+#define SSR_GND 5            // Using pin 5 as a ground for SSRs
+#define CAMERA_CONTROL_PIN 6 // SSR to control 360 camera pogo pins
 #define M_LED_PIN 4
-#define SSR_PIN 5
+#define GND_CONTROL_PIN 7    // SSR to connect/disconnect GND to 360 camera
 //define mechanical constants
 #define REQUIRED_CAM_EXT_TIME 50000   //May need to be more than this
 #define AUTONOMOUS_MODE_ENABLE 1
@@ -46,45 +47,10 @@ volatile byte I2CreturnValue = 0;
 //Setup motor encoder
 Encoder myEnc(ENCODER_1_PIN, ENCODER_2_PIN);
 
-/*
-void receiveCommand(int numBytes){
-  int currentCommand = 0; //Initialize variable that will temporarily hold command
-  while(Wire.available() > 0){
-    currentCommand = Wire.read();
-  }
-  switch (currentCommand){
-    case 0x0B:
-      extendCamBoom();
-      break;
-    case 0x10:
-      retractCamBoom();
-      break;
-    case 0x15:
-      takePhoto();
-      break;
-    case 0x1A:
-      turnOnCamera();
-      break;
-    case 0x1F:
-      turnOffCamera();
-      break;
-    case 0x16:
-      switchMode();
-      break;
-    case 0x55:
-      turnOnM();
-      break;
-  }
-  //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
-  currentCommand = 0;
-}
-
-*/
 void requestCommand(){
   I2CreturnValue = map(myEnc.read(), 0, 119000, 0, 100);
   Wire.write(I2CreturnValue);
 }
-
 
 void setup() {
   // Start serial for debugging, comment out for flight software
@@ -102,13 +68,12 @@ void setup() {
   pinMode(MOTOR_1_PIN_B, OUTPUT);
   pinMode(MOTOR_2_PIN_A, OUTPUT);
   pinMode(MOTOR_2_PIN_B, OUTPUT);
-  //Make camera control pin an output
-  pinMode(CAMERA_CONTROL_PIN, OUTPUT);
+
   // Setup input pins
   //pinMode(LIMIT_SWITCH_1, OUTPUT);
-  pinMode(LIMIT_SWITCH_2, INPUT);
-  pinMode(LIMIT_SWITCH_3, INPUT);
-  pinMode(LIMIT_SWITCH_4, INPUT);
+  //pinMode(LIMIT_SWITCH_2, INPUT);
+  //pinMode(LIMIT_SWITCH_3, INPUT);
+  //pinMode(LIMIT_SWITCH_4, INPUT);
   pinMode(ENCODER_1_PIN, INPUT);
   pinMode(ENCODER_2_PIN, INPUT);
 
@@ -123,42 +88,25 @@ void setup() {
   digitalWrite(MOTOR_2_PIN_A, LOW);
   digitalWrite(MOTOR_2_PIN_B, LOW); 
 
-  //Manual boom control for testing
-  //turnOnM();
-  //retractCamBoom();
+  //Set up pins 5, 6, 7 for SSR control
+  pinMode(SSR_GND, OUTPUT);
+  digitalWrite(SSR_GND, LOW);
+  //Make camera control pin an output
+  pinMode(CAMERA_CONTROL_PIN, OUTPUT);
+  digitalWrite(CAMERA_CONTROL_PIN, LOW);
+  pinMode(GND_CONTROL_PIN, OUTPUT);
+  digitalWrite(GND_CONTROL_PIN, LOW);
 }
 
 void loop() {
-  //AUTONOMOUS_MODE_ENABLE set to 0 means central control by data control board. AUTONOMOUS_MODE_ENABLE
-  /*
-  if(AUTONOMOUS_MODE_ENABLE == 0){
-    // Check if extenstion limit switches have been pressed, if so, turn off respective motor
-    // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
-    if(digitalRead(LIMIT_SWITCH_2) == HIGH || digitalRead(LIMIT_SWITCH_1) == HIGH || myEnc.read() < -120000){
-      digitalWrite(MOTOR_1_PIN_A, LOW);
-      digitalWrite(MOTOR_1_PIN_B, LOW);
-    }
-    // If the sufficient amount of time to extend the camera boom has passed, turn off the boom motor
-    if((millis() > (camExtensionTime + REQUIRED_CAM_EXT_TIME)) || (millis() > (camRetractionTime + REQUIRED_CAM_EXT_TIME))){
-      digitalWrite(MOTOR_1_PIN_A, LOW);
-      digitalWrite(MOTOR_1_PIN_B, LOW);  
-    }
-  }
-  */
-  else if (AUTONOMOUS_MODE_ENABLE == 1){
-    turnOnCamera();
     while(millis() < 65000){ //Board powers on at T+20 so this is T+65 to compensate for that 
       //Do nothing until T+85s
     }
+    turnOnCamera();
     turnOnM();
     //Begin boom extension
     Serial.println("Extending camera boom now.");
-    //extendCamBoom();
-    digitalWrite(MOTORS_ENABLE_PIN, HIGH);
-    //If boom goes the wrong way, make pin A HIGH and pin B LOW
-    digitalWrite(MOTOR_1_PIN_A, LOW); // Actually LOW
-    digitalWrite(MOTOR_1_PIN_B, HIGH);// Actually HIGH
-    delay(1000);
+    extendCamBoom();
     camExtensionTime = millis();
     while(camBoomExtended == false){
       // Print current encoder counts to Serial
@@ -181,16 +129,40 @@ void loop() {
         camBoomExtended = true;
       }
     }
+    delay(1000);
     //Boom extended, continue
-    for(int i=0; i<10; i++){
+    for(int i=0; i<5; i++){
       takePhoto();
-      delay(1000);
+      delay(1500);
     }
     //Put camera in transfer mode here
+    switchToTransferMode();
+    //Power off camera
+    turnOffCamera();
+    delay(1000);
+    turnOnCamera();
     //Begin copying photos to Pi
-
-    //Complete copying photos to Pi
-    while(millis() < 275000){
+    while(millis() < 157000){  //This will need to be changed based on time to transfer photos to Pi
+      //Do nothing until T+177
+    }
+    //Turn off camera and turn back on in capture mode
+    turnOffCamera();
+    switchToCaptureMode();
+    delay(1000);
+    turnOnCamera();
+    //Take 20 photos
+    for(int i = 0; i < 20; i++){
+      takePhoto();
+      delay(1500);
+    }
+    //Turn off camera and turn back on in transfer mode
+    turnOffCamera();
+    switchToTransferMode();
+    delay(1000);
+    turnOnCamera();
+    //T+239s~
+    //Pi now transfers second batch of photos
+    while(millis() < 255000){
       //Do nothing until T+275
     }
     retractCamBoom();
@@ -222,7 +194,6 @@ void loop() {
     while(true){
       //Do nothing
     }
-  }
 }
 
 void extendCamBoom(){
@@ -255,7 +226,7 @@ void turnOnCamera(){
 
 void turnOffCamera(){
   digitalWrite(CAMERA_CONTROL_PIN, HIGH);
-  delay(3000); //2000
+  delay(5000); //2000
   digitalWrite(CAMERA_CONTROL_PIN, LOW); 
 }
 
@@ -267,4 +238,12 @@ void switchMode(){
 
 void turnOnM(){
   digitalWrite(M_LED_PIN, LOW);
+}
+
+void switchToTransferMode(){
+  digitalWrite(GND_CONTROL_PIN, HIGH);
+}
+
+void switchToCaptureMode(){
+  digitalWrite(GND_CONTROL_PIN, LOW);
 }

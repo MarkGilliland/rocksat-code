@@ -39,44 +39,6 @@ Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_2_PIN, STEPPER_4_PIN, STEPPE
 int debrisLauncherDegrees = 0;
 int currentPos = 0;
 
-
-//Define function that is run whenever the Arduino receives a command from the master
-/*
-void receiveCommand(int numBytes){
-  int currentCommand = 0; //Initialize variable that will temporarily hold command
-  while(Wire.available() > 0){
-    currentCommand = Wire.read();
-  }
-  //Case statement calls the function that was called for
-  switch (currentCommand) {
-    case 36:  //0x24
-      //Turn on laser
-      turnOnLaser();
-      break;
-    case 41:  //0x29
-      //Turn off laser
-      turnOffLaser();
-      break;
-    case 46:
-      //Change target
-      changeTarget();
-      break;
-    case 51: //0x33
-      //heat SMA springs
-      heatSMA();
-      break;
-    case 56: //0x38
-      //Home laser
-      homeLaser();
-      break;
-    default:
-      //Do nothing
-      break;
-  }
-  //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
-  currentCommand = 0;
-}
-*/
 //Function that is executed when master requests data
 void requestCommand(){
   Wire.write(currentPos);
@@ -119,20 +81,24 @@ void setup() {
 
 
 void loop() {
-  while(millis() < 65000){}                             // Wait till T+85 to act. (Board powers on at T+20, so 65000 is 85s.)
+  while(millis() < 65000){
+    // Wait till T+85 to act. (Board powers on at T+20, so 65000 is 85s.)
+  }    
   homeLaser();                                          
   heatSMA();
-  delay(30000);                                         // Wait 30s for debris carrier to open.  Springs will still be powered even after this.
+  delay(30000);                // Wait 30s for debris carrier to open.  Springs will still be powered even after this.
   turnOnLaser();
   changeTarget(0);
-  delay(15000);                                         // Try to move the first target for 15s.
+  delay(15000);                // Try to move the first target for 15s.
   changeTarget(1);
-  delay(15000);                                         // Try to move the second target for 15s.
+  delay(15000);                // Try to move the second target for 15s.
   changeTarget(2);
-  delay(15000);                                         // Try to move the third target for 15s.
+  delay(15000);                // Try to move the third target for 15s.
   turnOffLaser();                             
   coolSMA();
-  while(true){};                                        // Turn everything off and become idle.  Completion time at ~ T+160.
+  while(true){
+    // Turn everything off and become idle.  Completion time at ~ T+163.
+  };                           
 }
 
 

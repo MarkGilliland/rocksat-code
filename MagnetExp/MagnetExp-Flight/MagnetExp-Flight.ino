@@ -38,28 +38,6 @@ Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPE
 volatile int debrisLauncherDegrees = 0;
 volatile byte debrisLaunched = 0;
 
-//Define function that is run whenever the Arduino receives a command from the master
-/*
-void receiveCommand(int numBytes){
-  int currentCommand = 0; //Initialize variable that will temporarily hold command
-  while(Wire.available() > 0){
-    currentCommand = Wire.read();
-  }
-  //Case statement calls the function that was called for
-  switch (currentCommand) {
-    case 71:  //0x47
-      //Launch Debris
-      launchDebris();
-      break;
-    default:
-      //Do nothing
-      break;
-  }
-  //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
-  currentCommand = 0;
-}
-*/
-
 void requestCommand(){
   Wire.write(debrisLaunched);
 }
@@ -96,25 +74,18 @@ void setup() {
 }
 
 void loop() {
-  // Nothing here, all functionality is provided by recieveCommand and custom functions
-  if(AUTONOMOUS_MODE_ENABLE == 0){
-    //Do nothing, all functionality proved by receiveCommand
+  //Run without central control from the data control board
+  while(millis() < 130000){
+    //Wait until we reach T+150
   }
-  if(AUTONOMOUS_MODE_ENABLE == 1){
-    //Run without central control from the data control board
-    while(millis() < 65000){
-      //Wait until we reach T+85
-    }
-    digitalWrite(MOSFET_1_PIN,HIGH);
-    for(int i = 0; i < 10; i++){
-      //launchDebris();
-      mirrorStepper.step(STEPS_PER_LAUNCH);
-      delay(10000);
-    }
-    digitalWrite(LED_PIN, HIGH);
-    while(true){
-      //Do nothing, program has completed running
-    }
+  for(int i = 0; i < 10; i++){
+    //launchDebris();
+    mirrorStepper.step(STEPS_PER_LAUNCH);
+    delay(5000);
+  }
+  digitalWrite(LED_PIN, HIGH);
+  while(true){
+    //Do nothing, program has completed running
   }
 }
 

@@ -30,7 +30,7 @@
 //define motor properties:
 #define STEPS_PER_REVOLUTION 2048  //for stepper library
 #define STEPS_PER_LAUNCH 187       //roughly 2048/11.0
-#define MAX_STEPPER_SPEED 16       //probably need to change this value
+#define MAX_STEPPER_SPEED 11       //probably need to change this value
 //declare stepper object
 Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_2_PIN, STEPPER_4_PIN, STEPPER_1_PIN, STEPPER_3_PIN); //Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);
 
@@ -38,50 +38,6 @@ Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_2_PIN, STEPPER_4_PIN, STEPPE
 int debrisLauncherDegrees = 0;
 int debrisLaunched = 0;
 
-//Define function that is run whenever the Arduino receives a command from the master
-/*
-void receiveCommand(int numBytes){
-  int currentCommand = 0; //Initialize variable that will temporarily hold command
-  while(Wire.available() > 0){
-    currentCommand = Wire.read();
-  }
-  //Case statement calls the function that was called for
-  switch (currentCommand) {
-    case 61:  //0x3D
-      //Turn on Static generator
-      turnOnStatic();
-      break;
-    case 66:  //0x42
-      //Turn off Static generator
-      turnOffStatic();
-      break;
-    case 71:  //0x47
-      //Launch Debris
-      launchDebris();
-      break;
-    case 76:  //0x4C
-      //Turn on Pi Camera lights
-      //turnOnLights();
-      digitalWrite(10, HIGH);
-      break;
-    case 81:  //0x4C
-      //Turn off Pi Camera lights
-      //turnOffLights();
-      digitalWrite(10, LOW);
-      break;
-    default:
-      //Do nothing
-      break;
-  }
-  //Last thing before exiting the function is to clear currentCommand, probably unnecessary, but overly safe. 
-  currentCommand = 0;
-  noInterrupts();
-  digitalWrite(LED_PIN, HIGH);
-  delay(1000);
-  digitalWrite(LED_PIN, LOW);
-  interrupts();
-}
-*/
 void requestCommand(){
   Wire.write(debrisLaunched);
 }
@@ -119,28 +75,26 @@ void setup() {
 }
 
 void loop() {
-  if(AUTONOMOUS_MODE_ENABLE == 0){
-    // Nothing here, all functionality is provided by recieveCommand and custom functions
+  while(millis() < 65000){
+    //Do nothing until we reach T+85
   }
-  if(AUTONOMOUS_MODE_ENABLE == 1){
-    //Turn on pi camera lights
-    turnOnLights();
-    while(millis() < 65000){
-      //Do nothing until we reach T+85
-    }
+  //Turn on pi camera lights
+  turnOnLights();
+  while(millis() < 218000){
+    //Do nothing until we reach T+238
+  }
+  launchDebris();
+  delay(10000);
+  turnOnStatic();
+  delay(5000);
+  for(int i = 0; i < 10; i++){
     launchDebris();
-    delay(10000);
-    turnOnStatic();
     delay(5000);
-    for(int i = 0; i < 10; i++){
-      launchDebris();
-      delay(10000);
-    }
-    digitalWrite(LED_PIN, HIGH);
-    turnOffStatic();
-    while(true){
-      //Do nothing, program has completed running
-    }
+  }
+  digitalWrite(LED_PIN, HIGH);
+  turnOffStatic();
+  while(true){
+    //Do nothing, program has completed running
   }
 }
 
