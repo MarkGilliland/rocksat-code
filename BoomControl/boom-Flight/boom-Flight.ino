@@ -87,18 +87,14 @@ void requestCommand(){
 
 
 void setup() {
-  // Start serial for debugging, comment out for production software
+  // Start serial for debugging, comment out for flight software
   Serial.begin(9600);
   Serial.println("Online.");
 
   // Start I2C for communication to master
   // Join I2C bus as a slave with address 0x05 AKA 0b0000001 AKA 5.
-  //Wire.begin(0x05);
-  if(AUTONOMOUS_MODE_ENABLE == 0){    
-    // When a command is received from the master, jump to the receiveCommand function and execute the proper command
-    //Wire.onReceive(receiveCommand);
-    //Wire.onRequest(requestCommand);
-  }
+  Wire.begin(0x05);   
+  Wire.onRequest(requestCommand);
   
   // Setup motor driver pins
   pinMode(MOTORS_ENABLE_PIN, OUTPUT);
@@ -134,6 +130,7 @@ void setup() {
 
 void loop() {
   //AUTONOMOUS_MODE_ENABLE set to 0 means central control by data control board. AUTONOMOUS_MODE_ENABLE
+  /*
   if(AUTONOMOUS_MODE_ENABLE == 0){
     // Check if extenstion limit switches have been pressed, if so, turn off respective motor
     // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
@@ -147,6 +144,7 @@ void loop() {
       digitalWrite(MOTOR_1_PIN_B, LOW);  
     }
   }
+  */
   else if (AUTONOMOUS_MODE_ENABLE == 1){
     turnOnCamera();
     while(millis() < 65000){ //Board powers on at T+20 so this is T+65 to compensate for that 
@@ -163,11 +161,11 @@ void loop() {
     delay(1000);
     camExtensionTime = millis();
     while(camBoomExtended == false){
+      // Print current encoder counts to Serial
       Serial.println(myEnc.read());
-      // Check if extenstion limit switches have been pressed, if so, turn off respective motor
+      // Check if extension limit switches have been pressed, if so, turn off respective motor
       // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
       if(abs(myEnc.read()) > 119000){
-        digitalWrite(M_LED_PIN, HIGH);
         digitalWrite(MOTORS_ENABLE_PIN, LOW);
         digitalWrite(MOTOR_1_PIN_A, LOW);
         digitalWrite(MOTOR_1_PIN_B, LOW);
@@ -176,7 +174,6 @@ void loop() {
       }
       // If sufficient time to extend the camera boom has passed, turn off the boom motor
       if(millis() > (camExtensionTime + REQUIRED_CAM_EXT_TIME)){
-        digitalWrite(M_LED_PIN, HIGH);
         digitalWrite(MOTORS_ENABLE_PIN, LOW);
         digitalWrite(MOTOR_1_PIN_A, LOW);
         digitalWrite(MOTOR_1_PIN_B, LOW);
@@ -187,8 +184,12 @@ void loop() {
     //Boom extended, continue
     for(int i=0; i<10; i++){
       takePhoto();
-      delay(5000);
+      delay(1000);
     }
+    //Put camera in transfer mode here
+    //Begin copying photos to Pi
+
+    //Complete copying photos to Pi
     while(millis() < 275000){
       //Do nothing until T+275
     }

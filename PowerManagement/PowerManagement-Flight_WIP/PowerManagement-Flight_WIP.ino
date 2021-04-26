@@ -14,6 +14,18 @@
  * 110-  6: 5VA-STA          14: 5VD-LAS
  * 111-  7: 12V Temperature  15: 5VD Temperature
  */
+//FLIGHT_MODE == 1 accounts for T-120s GSE turn on, FLIGHT_MODE == 0 ignores T-120s turn on for testing
+//VERIFY WHAT MODE THE BOARD IS SET TO
+#define FLIGHT_MODE 1    
+#if FLIGHT_MODE == 1
+  #define TE_1 140000    //Time that TE-1 line (computers) is turned on, in milliseconds
+  #define TE_2 205000    //Time that TE-2 line (actuators) is turned on, in milliseconds
+  #define T_OFF 455000  //(Assumed) time that the payload should turn off
+#elif FLIGHT_MODE == 0
+  #define TE_1 20000    //Time that TE-1 line (computers) is turned on, in milliseconds
+  #define TE_2 85000    //Time that TE-2 line (actuators) is turned on, in milliseconds
+  #define T_OFF 335000  //(Assumed) time that the payload should turn off
+#endif
 
 //Constant pin declarations:
 //Misc Pins
@@ -49,10 +61,6 @@ const int ENABLES_5VD[] = {ENABLE_MAG_5VD, ENABLE_STA_5VD, ENABLE_TX_5VD,
                            ENABLE_LAS_5VD, ENABLE_CAM_5VD };
 
 //Global variables & constants
-#define FLIGHT_MODE 1    //FLIGHT_MODE == 1 accounts for T-120s GSE turn on, FLIGHT_MODE == 0 ignores T-120s turn on for testing
-const int TE_1 = 20000;  //Time that TE-1 line (computers) is turned on, in milliseconds
-const int TE_2 = 85000;  //Time that TE-2 line (actuators) is turned on, in milliseconds
-const int T_OFF = 335000;//(Assumed) time that the payload should turn off
 int upTime = 0;
 float camCurrent_12V = 0.0;
 float staCurrent_12V = 0.0;
@@ -200,16 +208,15 @@ void setup() {
   digitalWrite(MUX_SEL_A, 0);
   //Setup complete
   Serial.println("Setup complete.");
+  if(FLIGHT_MODE == 0){
+    Serial.print("Ignoring 120 second wait after GSE power up, is this desired?");
+  }
+  else if(FLIGHT_MODE == 1){
+    Serial.print("Respecting 120 second wait after GSE power up until T+0, is this desired?");
+  }
 }
 
 void loop() {
-  if(FLIGHT_MODE == 1){
-    //Delay for 120 seconds so that T+0 lines up
-    delay(120000);
-  }
-  else if(FLIGHT_MODE == 0){
-    //Continue immediately, for testing purposes
-  }
   refreshMonitor();
   upTime = millis();
   //Check if T_OFF has been reached, and turn off if true
@@ -222,7 +229,7 @@ void loop() {
     digitalWrite(ENABLE_STA_12V, OUTPUT_DISABLE);
     digitalWrite(ENABLE_CAM_12V, OUTPUT_DISABLE);
     while(true){
-      //Do nothing, system has been powered down so wait for wallops power to turn off.
+      //Do nothing, system has been powered down so wait for GSE to turn off.
     }
   }
   //Check if TE_1 has been reached, if yes, turn on 5VD channels
