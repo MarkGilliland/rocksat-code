@@ -131,7 +131,7 @@ void loop() {
     }
     delay(1000);
     //Boom extended, continue
-    for(int i=0; i<5; i++){
+    for(int i=0; i<30; i++){
       takePhoto();
       delay(1500);
     }
@@ -142,32 +142,12 @@ void loop() {
     delay(1000);
     turnOnCamera();
     //Begin copying photos to Pi
-    while(millis() < 157000){  //This will need to be changed based on time to transfer photos to Pi
-      //Do nothing until T+177
-    }
-    //Turn off camera and turn back on in capture mode
-    turnOffCamera();
-    switchToCaptureMode();
-    delay(1000);
-    turnOnCamera();
-    //Take 20 photos
-    for(int i = 0; i < 20; i++){
-      takePhoto();
-      delay(1500);
-    }
-    //Turn off camera and turn back on in transfer mode
-    turnOffCamera();
-    switchToTransferMode();
-    delay(1000);
-    turnOnCamera();
-    //T+239s~
-    //Pi now transfers second batch of photos
+    
+    
     while(millis() < 255000){
       //Do nothing until T+275
     }
     retractCamBoom();
-    //Turn off 360 camera
-    turnOffCamera();
     //Update camExtensionTime to current time before entering while loop
     camExtensionTime = millis();
     //Check for complete retraction of the boom, either by time or by encoder counts
@@ -191,6 +171,8 @@ void loop() {
         camBoomExtended = false;
       }
     }
+    //Turn off 360 camera
+    turnOffCamera();
     while(true){
       //Do nothing
     }
