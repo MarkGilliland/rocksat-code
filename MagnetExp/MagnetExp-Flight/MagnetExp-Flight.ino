@@ -1,4 +1,4 @@
-// WIP flight code for the magnet experiment for Mines Rocksat-X 2020
+// FINISHED FINAL FLIGHT CODE FOR MAGNET, 4/27/2021
 // By: Graham Braly
 
 //Include necessary libraries
@@ -30,7 +30,7 @@
 //define motor properties:
 #define STEPS_PER_REVOLUTION 2048    //for stepper library
 #define STEPS_PER_LAUNCH 187         //roughly 2048/11.0
-#define MAX_STEPPER_SPEED 11         //probably need to change this value
+#define MAX_STEPPER_SPEED 11         
 //declare stepper object
 Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);
 
