@@ -1,7 +1,6 @@
-// FINISHED FINAL FLIGHT CODE FOR LASER, 4/27/2021
-// Experiment Control Board code
+// Experiment Control Board code - Initial
 // Drives stepper motor, MOSFET-switched outputs
-// flight code for the laser experiment for Mines Rocksat-X 2020
+// WIP flight code for the laser experiment for Mines Rocksat-X 2020
 // By: Graham Braly
 
 //Include necessary libraries

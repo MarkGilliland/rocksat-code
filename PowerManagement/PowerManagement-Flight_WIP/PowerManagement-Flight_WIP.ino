@@ -85,56 +85,56 @@ void refreshMonitor(){
   digitalWrite(MUX_SEL_C, 0);
   digitalWrite(MUX_SEL_B, 0);
   digitalWrite(MUX_SEL_A, 0);
-  delay(10);
+  delay(2);
   camCurrent_12V = countsToAmps(analogRead(MUX_AIN_1));
   staCurrent_5VD = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 001 channels to variables
   digitalWrite(MUX_SEL_C, 0);
   digitalWrite(MUX_SEL_B, 0);
   digitalWrite(MUX_SEL_A, 1);
-  delay(10);
+  delay(2);
   magCurrent_5VA = countsToAmps(analogRead(MUX_AIN_1));
   magCurrent_5VD = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 010 channels to variables
   digitalWrite(MUX_SEL_C, 0);
   digitalWrite(MUX_SEL_B, 1);
   digitalWrite(MUX_SEL_A, 0);
-  delay(10);
+  delay(2);
   txCurrent_5VA = countsToAmps(analogRead(MUX_AIN_1));
   camCurrent_5VD = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 011 channels to variables
   digitalWrite(MUX_SEL_C, 0);
   digitalWrite(MUX_SEL_B, 1);
   digitalWrite(MUX_SEL_A, 1);
-  delay(10);
+  delay(2);
   staCurrent_12V = countsToAmps(analogRead(MUX_AIN_1));
   camCurrent_5VA = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 100 channels to variables
   digitalWrite(MUX_SEL_C, 1);
   digitalWrite(MUX_SEL_B, 0);
   digitalWrite(MUX_SEL_A, 0);
-  delay(10);
+  delay(2);
   lasCurrent_5VA = countsToAmps(analogRead(MUX_AIN_1));
   txCurrent_5VD = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 101 channels to variables
   digitalWrite(MUX_SEL_C, 1);
   digitalWrite(MUX_SEL_B, 0);
   digitalWrite(MUX_SEL_A, 1);
-  delay(10);
+  delay(2);
   //null = countsToAmps(analogRead(MUX_AIN_1)); This is not used
   temp_5VA = countsToDegrees(analogRead(MUX_AIN_2));
   //Read both 110 channels to variables
   digitalWrite(MUX_SEL_C, 1);
   digitalWrite(MUX_SEL_B, 1);
   digitalWrite(MUX_SEL_A, 0);
-  delay(10);
+  delay(2);
   staCurrent_5VA = countsToAmps(analogRead(MUX_AIN_1));
   lasCurrent_5VD = countsToAmps(analogRead(MUX_AIN_2));
   //Read both 111 channels to variables 
   digitalWrite(MUX_SEL_C, 1);
   digitalWrite(MUX_SEL_B, 1);
   digitalWrite(MUX_SEL_A, 1);
-  delay(10);
+  delay(2);
   temp_12V = countsToDegrees(analogRead(MUX_AIN_1));
   temp_5VA = countsToDegrees(analogRead(MUX_AIN_2));
   //All temps and currents acquired. Verify that they are within bounds
@@ -209,16 +209,24 @@ void setup() {
   //Setup complete
   Serial.println("Setup complete.");
   if(FLIGHT_MODE == 0){
-    Serial.print("Ignoring 120 second wait after GSE power up, is this desired?");
+    Serial.println("Ignoring 120 second wait after GSE power up, is this desired?");
   }
   else if(FLIGHT_MODE == 1){
-    Serial.print("Respecting 120 second wait after GSE power up until T+0, is this desired?");
+    Serial.println("Respecting 120 second wait after GSE power up until T+0, is this desired?");
   }
 }
 
 void loop() {
+  //static int iter = 0;
   refreshMonitor();
   upTime = millis();
+  /*
+  if(upTime/1000 > iter){
+    iter = upTime/1000;
+    Serial.println(iter);
+    if(iter == 120) Serial.println("Mark T = 0. Launch.");
+  }
+  */
   //Check if T_OFF has been reached, and turn off if true
   if (upTime > T_OFF){
     Serial.println("T_OFF reached, powering down outputs.");

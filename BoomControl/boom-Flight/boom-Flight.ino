@@ -1,8 +1,11 @@
-// FINISHED FINAL FLIGHT CODE FOR BOOM, 4/27/2021
-// Boom Control Board code
+// Boom Control Board code - Initial
 // Drives camera boom, controls M LEDs and 360 camera
+// and both boom's limit switches.  
+// LIMIT_SWITCH_1 = retracted camera boom, LIMIT_SWITCH_2 = extended camera boom
+// LIMIT_SWITCH_3 = Not used, LIMIT_SWITCH_4 = Not used
 // Current execution time is ~6ms per loop
 // At least with DFRobot motor, encoder counts are negative for CW and positive for CCW rotation.
+// Camera boom pulley system equates to ________.
 
 #include <Wire.h>
 #include <Encoder.h> //needed from an online library
@@ -28,7 +31,7 @@
 #define M_LED_PIN 4
 #define GND_CONTROL_PIN 7    // SSR to connect/disconnect GND to 360 camera
 //define mechanical constants
-#define REQUIRED_CAM_EXT_TIME 50000   
+#define REQUIRED_CAM_EXT_TIME 50000   //May need to be more than this
 #define AUTONOMOUS_MODE_ENABLE 1
 
 //define global variables used in the program
@@ -103,6 +106,7 @@ void loop() {
     turnOnM();
     //Begin boom extension
     Serial.println("Extending camera boom now.");
+    digitalWrite(13, HIGH);
     extendCamBoom();
     camExtensionTime = millis();
     while(camBoomExtended == false){
@@ -126,6 +130,7 @@ void loop() {
         camBoomExtended = true;
       }
     }
+    digitalWrite(13, LOW);
     delay(1000);
     //Boom extended, continue
     for(int i=0; i<30; i++){
@@ -140,11 +145,11 @@ void loop() {
     turnOnCamera();
     //Begin copying photos to Pi
     
-    
     while(millis() < 255000){
       //Do nothing until T+275
     }
     retractCamBoom();
+    digitalWrite(13, HIGH);
     //Update camExtensionTime to current time before entering while loop
     camExtensionTime = millis();
     //Check for complete retraction of the boom, either by time or by encoder counts
@@ -168,6 +173,7 @@ void loop() {
         camBoomExtended = false;
       }
     }
+    digitalWrite(13, LOW);
     //Turn off 360 camera
     turnOffCamera();
     while(true){
