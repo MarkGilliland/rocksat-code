@@ -18,13 +18,13 @@
 //VERIFY WHAT MODE THE BOARD IS SET TO
 #define FLIGHT_MODE 1    
 #if FLIGHT_MODE == 1
-  #define TE_1 140000    //Time that TE-1 line (computers) is turned on, in milliseconds
-  #define TE_2 205000    //Time that TE-2 line (actuators) is turned on, in milliseconds
-  #define T_OFF 455000  //(Assumed) time that the payload should turn off
+  unsigned long TE_1 = 100000;    //Was 140,000
+  unsigned long TE_2 = 165000;    //Was 205,000
+  unsigned long T_OFF = 415000;   //Was 455,000
 #elif FLIGHT_MODE == 0
-  #define TE_1 20000    //Time that TE-1 line (computers) is turned on, in milliseconds
-  #define TE_2 85000    //Time that TE-2 line (actuators) is turned on, in milliseconds
-  #define T_OFF 335000  //(Assumed) time that the payload should turn off
+  unsigned long TE_1 = 20000;    //Time that TE-1 line (computers) is turned on, in milliseconds
+  unsigned long TE_2 = 85000;    //Time that TE-2 line (actuators) is turned on, in milliseconds
+  unsigned long T_OFF = 335000;  //(Assumed) time that the payload should turn off
 #endif
 
 //Constant pin declarations:
@@ -61,7 +61,7 @@ const int ENABLES_5VD[] = {ENABLE_MAG_5VD, ENABLE_STA_5VD, ENABLE_TX_5VD,
                            ENABLE_LAS_5VD, ENABLE_CAM_5VD };
 
 //Global variables & constants
-int upTime = 0;
+unsigned long upTime = 0;
 float camCurrent_12V = 0.0;
 float staCurrent_12V = 0.0;
 float staCurrent_5VD = 0.0;
