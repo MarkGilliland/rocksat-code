@@ -85,6 +85,7 @@ void loop() {
     delay(500);
     digitalWrite(LED_PIN, LOW);
     delay(4500);
+    debrisLaunched++;
   }
   digitalWrite(LED_PIN, HIGH);
   while(true){
