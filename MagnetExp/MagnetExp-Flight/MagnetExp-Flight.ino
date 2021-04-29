@@ -80,7 +80,7 @@ void loop() {
   }
   for(int i = 0; i < 10; i++){
     //launchDebris();
-    mirrorStepper.step(STEPS_PER_LAUNCH);
+    mirrorStepper.step(-STEPS_PER_LAUNCH);
     digitalWrite(LED_PIN, HIGH);
     delay(500);
     digitalWrite(LED_PIN, LOW);
@@ -92,8 +92,8 @@ void loop() {
   }
 }
 
-void launchDebris(){
-  //Rotate stepper to launch one BB
-  mirrorStepper.step(STEPS_PER_LAUNCH);
-  debrisLaunched++;
-}
+//void launchDebris(){
+//  //Rotate stepper to launch one BB
+//  mirrorStepper.step(-STEPS_PER_LAUNCH);
+//  debrisLaunched++;
+//}
