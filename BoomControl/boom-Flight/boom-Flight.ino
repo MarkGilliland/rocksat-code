@@ -31,7 +31,8 @@
 #define M_LED_PIN 4
 #define GND_CONTROL_PIN 7    // SSR to connect/disconnect GND to 360 camera
 //define mechanical constants
-#define REQUIRED_CAM_EXT_TIME 50000   //May need to be more than this
+#define REQUIRED_CAM_EXT_TIME 47000   //May need to be more than this
+#define REQUIRED_CAM_RET_TIME 50000
 #define AUTONOMOUS_MODE_ENABLE 1
 
 //define global variables used in the program
@@ -110,6 +111,7 @@ void loop() {
     extendCamBoom();
     camExtensionTime = millis();
     while(camBoomExtended == false){
+      /*
       // Print current encoder counts to Serial
       Serial.println(myEnc.read());
       // Check if extension limit switches have been pressed, if so, turn off respective motor
@@ -121,6 +123,7 @@ void loop() {
         Serial.println("Boom should be extended. Powered off by Encoder counts");
         camBoomExtended = true;
       }
+      */
       // If sufficient time to extend the camera boom has passed, turn off the boom motor
       if(millis() > (camExtensionTime + REQUIRED_CAM_EXT_TIME)){
         digitalWrite(MOTORS_ENABLE_PIN, LOW);
@@ -130,6 +133,7 @@ void loop() {
         camBoomExtended = true;
       }
     }
+    delay(3000); //3 second delay to make up for boom extenstion reduction from 50 to 47 secondss
     digitalWrite(13, LOW);
     delay(1000);
     //Boom extended, continue
@@ -157,6 +161,7 @@ void loop() {
       Serial.println(myEnc.read());
       // Check if extenstion limit switches have been pressed, if so, turn off respective motor
       // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
+      /*
       if((abs(myEnc.read()) < 1000)){
         digitalWrite(MOTORS_ENABLE_PIN, LOW);
         digitalWrite(MOTOR_1_PIN_A, LOW);
@@ -164,8 +169,9 @@ void loop() {
         Serial.println("Boom should be retracted. Stopped by encoder counts");
         camBoomExtended = false;
       }
+      */
       // If the sufficient amount of time to extend the camera boom has passed, turn off the boom motor
-      if(millis() > (camExtensionTime + REQUIRED_CAM_EXT_TIME)){
+      if(millis() > (camExtensionTime + REQUIRED_CAM_RET_TIME)){
         digitalWrite(MOTORS_ENABLE_PIN, LOW);
         digitalWrite(MOTOR_1_PIN_A, LOW);
         digitalWrite(MOTOR_1_PIN_B, LOW);
