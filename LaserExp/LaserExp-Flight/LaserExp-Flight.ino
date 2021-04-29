@@ -33,7 +33,7 @@
 //define motor properties:
 #define STEPS_PER_REVOLUTION 2048  //change this to 513 for the weaker motor
 #define MAX_STEPPER_SPEED 16      //change this to 20 for the weaker motor
-#define DEBRIS_INCREMENT 2
+#define DEBRIS_INCREMENT 38
 //declare stepper object
 //Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_1_PIN, STEPPER_2_PIN, STEPPER_3_PIN, STEPPER_4_PIN);  // This is for the weaker motor
 Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_2_PIN, STEPPER_4_PIN, STEPPER_1_PIN, STEPPER_3_PIN);  // SWITCH TO THIS FOR BEEFIER MOTOR
@@ -116,8 +116,8 @@ void turnOffLaser(){
 }
 
 void changeTarget(int target){
-  mirrorStepper.step(target*DEBRIS_INCREMENT-currentPos);
-  currentPos = target*DEBRIS_INCREMENT;
+  mirrorStepper.step(-target*DEBRIS_INCREMENT-currentPos);
+  currentPos = -target*DEBRIS_INCREMENT;
 }
 
 void heatSMA(){
@@ -129,6 +129,6 @@ void coolSMA(){
 }
 
 void homeLaser(){
-  mirrorStepper.step(-STEPS_PER_REVOLUTION/8);
+  mirrorStepper.step(STEPS_PER_REVOLUTION/8);
   currentPos = 0;
 }

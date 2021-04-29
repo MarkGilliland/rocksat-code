@@ -81,7 +81,10 @@ void loop() {
   for(int i = 0; i < 10; i++){
     //launchDebris();
     mirrorStepper.step(STEPS_PER_LAUNCH);
-    delay(5000);
+    digitalWrite(LED_PIN, HIGH);
+    delay(500);
+    digitalWrite(LED_PIN, LOW);
+    delay(4500);
   }
   digitalWrite(LED_PIN, HIGH);
   while(true){
