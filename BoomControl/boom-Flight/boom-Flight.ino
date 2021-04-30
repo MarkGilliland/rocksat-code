@@ -15,8 +15,8 @@
 #define CW 0
 #define CCW 1
 //define pins
-#define ENCODER_1_PIN 2
-#define ENCODER_2_PIN 9
+//#define ENCODER_1_PIN 2
+//#define ENCODER_2_PIN 9
 #define LIMIT_SWITCH_1 4
 //#define LIMIT_SWITCH_2 5
 //#define LIMIT_SWITCH_3 6
@@ -46,16 +46,16 @@ bool camBoomExtended = false;
 volatile byte I2CreturnValue = 0;
 
 //Setup motor encoder
-Encoder myEnc(ENCODER_1_PIN, ENCODER_2_PIN);
+//Encoder myEnc(ENCODER_1_PIN, ENCODER_2_PIN);
 
 void requestCommand(){
-  I2CreturnValue = map(myEnc.read(), 0, 119000, 0, 100);
+  //I2CreturnValue = map(myEnc.read(), 0, 119000, 0, 100);
   Wire.write(I2CreturnValue);
 }
 
 void setup() {
   // Start serial for debugging, comment out for flight software
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Online.");
 
   // Start I2C for communication to master
@@ -75,8 +75,8 @@ void setup() {
   //pinMode(LIMIT_SWITCH_2, INPUT);
   //pinMode(LIMIT_SWITCH_3, INPUT);
   //pinMode(LIMIT_SWITCH_4, INPUT);
-  pinMode(ENCODER_1_PIN, INPUT);
-  pinMode(ENCODER_2_PIN, INPUT);
+  //pinMode(ENCODER_1_PIN, INPUT);
+  //pinMode(ENCODER_2_PIN, INPUT);
 
   //Make sure M is off
   pinMode(M_LED_PIN, OUTPUT);
@@ -108,6 +108,7 @@ void loop() {
     //Begin boom extension
     Serial.println("Extending camera boom now.");
     digitalWrite(13, HIGH);
+    digitalWrite(MOTORS_ENABLE_PIN, HIGH);
     extendCamBoom();
     camExtensionTime = millis();
     while(camBoomExtended == false){
@@ -152,13 +153,14 @@ void loop() {
     while(millis() < 255000){
       //Do nothing until T+275
     }
+    digitalWrite(MOTORS_ENABLE_PIN, HIGH);
     retractCamBoom();
     digitalWrite(13, HIGH);
     //Update camExtensionTime to current time before entering while loop
     camExtensionTime = millis();
     //Check for complete retraction of the boom, either by time or by encoder counts
     while(camBoomExtended == true){
-      Serial.println(myEnc.read());
+      //Serial.println(myEnc.read());
       // Check if extenstion limit switches have been pressed, if so, turn off respective motor
       // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
       /*

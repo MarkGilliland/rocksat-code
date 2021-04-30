@@ -18,9 +18,9 @@
 //VERIFY WHAT MODE THE BOARD IS SET TO
 #define FLIGHT_MODE 1    
 #if FLIGHT_MODE == 1
-  unsigned long TE_1 = 100000;    //Was 140,000
-  unsigned long TE_2 = 165000;    //Was 205,000
-  unsigned long T_OFF = 415000;   //Was 455,000
+  unsigned long TE_1 = 140000;    //Was 140,000
+  unsigned long TE_2 = 205000;    //Was 205,000
+  unsigned long T_OFF = 455000;   //Was 455,000
 #elif FLIGHT_MODE == 0
   unsigned long TE_1 = 20000;    //Time that TE-1 line (computers) is turned on, in milliseconds
   unsigned long TE_2 = 85000;    //Time that TE-2 line (actuators) is turned on, in milliseconds
@@ -217,16 +217,14 @@ void setup() {
 }
 
 void loop() {
-  //static int iter = 0;
+  static int iter = 0;
   refreshMonitor();
   upTime = millis();
-  /*
   if(upTime/1000 > iter){
     iter = upTime/1000;
-    Serial.println(iter);
+    Serial.println((iter-120));
     if(iter == 120) Serial.println("Mark T = 0. Launch.");
   }
-  */
   //Check if T_OFF has been reached, and turn off if true
   if (upTime > T_OFF){
     Serial.println("T_OFF reached, powering down outputs.");
