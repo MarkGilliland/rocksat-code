@@ -75,8 +75,8 @@ void setup() {
 
 void loop() {
   //Run without central control from the data control board
-  while(millis() < 130000){
-    //Wait until we reach T+150
+  while(millis() < 150000){
+    //Wait until we reach T+170
   }
   for(int i = 0; i < 10; i++){
     //launchDebris();
