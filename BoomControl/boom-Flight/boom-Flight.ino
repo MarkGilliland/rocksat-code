@@ -1,26 +1,14 @@
-// Boom Control Board code - Initial
-// Drives camera boom, controls M LEDs and 360 camera
-// and both boom's limit switches.  
-// LIMIT_SWITCH_1 = retracted camera boom, LIMIT_SWITCH_2 = extended camera boom
-// LIMIT_SWITCH_3 = Not used, LIMIT_SWITCH_4 = Not used
-// Current execution time is ~6ms per loop
+// Boom Control Board code - FINAL FINISHED FOR FLIGHT, 4/29/21
+// Drives camera boom, controls M LEDs and 360 camera.
 // At least with DFRobot motor, encoder counts are negative for CW and positive for CCW rotation.
-// Camera boom pulley system equates to ________.
 
 #include <Wire.h>
 #include <Encoder.h> //needed from an online library
 
 //Constants and global variables.
-//Define motor direction states
-#define CW 0
-#define CCW 1
 //define pins
 #define ENCODER_1_PIN 2
 #define ENCODER_2_PIN 9
-#define LIMIT_SWITCH_1 4
-//#define LIMIT_SWITCH_2 5
-//#define LIMIT_SWITCH_3 6
-//#define LIMIT_SWITCH_4 7
 #define MOTORS_ENABLE_PIN 10 
 #define MOTOR_1_PIN_A A0
 #define MOTOR_1_PIN_B A1
@@ -33,15 +21,14 @@
 //define mechanical constants
 #define REQUIRED_CAM_EXT_TIME 47000   //May need to be more than this
 #define REQUIRED_CAM_RET_TIME 50000
-#define AUTONOMOUS_MODE_ENABLE 1
 
 //define global variables used in the program
-volatile long encoderCounts = 0;
-long cameraRotations = 0;
-long cameraPosition = 0;
-long camExtensionTime = 0;
-long camRetractionTime = 0;
-long flightTime = 0;
+volatile unsigned long encoderCounts = 0;
+unsigned long cameraRotations = 0;
+unsigned long cameraPosition = 0;
+unsigned long camExtensionTime = 0;
+unsigned long camRetractionTime = 0;
+unsigned long flightTime = 0;
 bool camBoomExtended = false;
 volatile byte I2CreturnValue = 0;
 
@@ -71,10 +58,6 @@ void setup() {
   pinMode(MOTOR_2_PIN_B, OUTPUT);
 
   // Setup input pins
-  //pinMode(LIMIT_SWITCH_1, OUTPUT);
-  //pinMode(LIMIT_SWITCH_2, INPUT);
-  //pinMode(LIMIT_SWITCH_3, INPUT);
-  //pinMode(LIMIT_SWITCH_4, INPUT);
   pinMode(ENCODER_1_PIN, INPUT);
   pinMode(ENCODER_2_PIN, INPUT);
 
@@ -87,7 +70,7 @@ void setup() {
   digitalWrite(MOTOR_1_PIN_A, LOW);
   digitalWrite(MOTOR_1_PIN_B, LOW);
   digitalWrite(MOTOR_2_PIN_A, LOW);
-  digitalWrite(MOTOR_2_PIN_B, LOW); 
+  digitalWrite(MOTOR_2_PIN_B, LOW);
 
   //Set up pins 5, 6, 7 for SSR control
   pinMode(SSR_GND, OUTPUT);
@@ -111,24 +94,12 @@ void loop() {
     extendCamBoom();
     camExtensionTime = millis();
     while(camBoomExtended == false){
-      /*
-      // Print current encoder counts to Serial
-      Serial.println(myEnc.read());
-      // Check if extension limit switches have been pressed, if so, turn off respective motor
-      // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
-      if(abs(myEnc.read()) > 119000){
-        digitalWrite(MOTORS_ENABLE_PIN, LOW);
-        digitalWrite(MOTOR_1_PIN_A, LOW);
-        digitalWrite(MOTOR_1_PIN_B, LOW);
-        Serial.println("Boom should be extended. Powered off by Encoder counts");
-        camBoomExtended = true;
-      }
-      */
       // If sufficient time to extend the camera boom has passed, turn off the boom motor
       if(millis() > (camExtensionTime + REQUIRED_CAM_EXT_TIME)){
-        digitalWrite(MOTORS_ENABLE_PIN, LOW);
         digitalWrite(MOTOR_1_PIN_A, LOW);
         digitalWrite(MOTOR_1_PIN_B, LOW);
+        digitalWrite(MOTOR_2_PIN_A, LOW);
+        digitalWrite(MOTOR_2_PIN_B, LOW);
         Serial.println("Sufficient time elapsed, Motor off.");
         camBoomExtended = true;
       }
@@ -155,31 +126,22 @@ void loop() {
     retractCamBoom();
     digitalWrite(13, HIGH);
     //Update camExtensionTime to current time before entering while loop
-    camExtensionTime = millis();
+    camRetractionTime = millis();
     //Check for complete retraction of the boom, either by time or by encoder counts
     while(camBoomExtended == true){
       Serial.println(myEnc.read());
-      // Check if extenstion limit switches have been pressed, if so, turn off respective motor
-      // If camera boom is either fully retracted or fully extended, or encoder limits are exceeded, stop the camera boom motor.
-      /*
-      if((abs(myEnc.read()) < 1000)){
-        digitalWrite(MOTORS_ENABLE_PIN, LOW);
-        digitalWrite(MOTOR_1_PIN_A, LOW);
-        digitalWrite(MOTOR_1_PIN_B, LOW);
-        Serial.println("Boom should be retracted. Stopped by encoder counts");
-        camBoomExtended = false;
-      }
-      */
       // If the sufficient amount of time to extend the camera boom has passed, turn off the boom motor
-      if(millis() > (camExtensionTime + REQUIRED_CAM_RET_TIME)){
-        digitalWrite(MOTORS_ENABLE_PIN, LOW);
+      if(millis() > (camRetractionTime + REQUIRED_CAM_RET_TIME)){
         digitalWrite(MOTOR_1_PIN_A, LOW);
         digitalWrite(MOTOR_1_PIN_B, LOW);
+        digitalWrite(MOTOR_2_PIN_A, LOW);
+        digitalWrite(MOTOR_2_PIN_B, LOW);
         Serial.println("Boom should be retracted. Stopped by time limit.");
         camBoomExtended = false;
       }
     }
     digitalWrite(13, LOW);
+    digitalWrite(MOTORS_ENABLE_PIN, LOW);
     //Turn off 360 camera
     turnOffCamera();
     while(true){
@@ -192,6 +154,8 @@ void extendCamBoom(){
   //If boom goes the wrong way, make pin A HIGH and pin B LOW
   digitalWrite(MOTOR_1_PIN_A, LOW); // Actually LOW
   digitalWrite(MOTOR_1_PIN_B, HIGH);// Actually HIGH
+  digitalWrite(MOTOR_2_PIN_A, LOW);
+  digitalWrite(MOTOR_2_PIN_B, HIGH);
   camExtensionTime = millis();
 }
 
@@ -200,6 +164,8 @@ void retractCamBoom(){
   //If boom goes the wrong way, make pin A LOW and pin B HIGH
   digitalWrite(MOTOR_1_PIN_A, HIGH);
   digitalWrite(MOTOR_1_PIN_B, LOW);
+  digitalWrite(MOTOR_2_PIN_A, HIGH);
+  digitalWrite(MOTOR_2_PIN_B, LOW);
   camRetractionTime = millis();
 }
 
