@@ -30,7 +30,7 @@
 //define motor properties:
 #define STEPS_PER_REVOLUTION 2048    //for stepper library
 #define STEPS_PER_LAUNCH 187         //roughly 2048/11.0
-#define MAX_STEPPER_SPEED 11         
+#define MAX_STEPPER_SPEED 16         
 //declare stepper object
 Stepper mirrorStepper(STEPS_PER_REVOLUTION, STEPPER_2_PIN, STEPPER_4_PIN, STEPPER_1_PIN, STEPPER_3_PIN);
 
