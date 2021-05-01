@@ -217,7 +217,7 @@ void setup() {
 }
 
 void loop() {
-  static int iter = 0;
+  static unsigned int iter = 0;
   refreshMonitor();
   upTime = millis();
   if(upTime/1000 > iter){
@@ -240,17 +240,24 @@ void loop() {
   }
   //Check if TE_1 has been reached, if yes, turn on 5VD channels
   if((upTime > TE_1) && (!TE_1_Active)){
-    Serial.println("TE_1 reached, powering on 5VD channels.");
+    Serial.println("TE_1 reached, powering on 5VD channels, besides 5VD_TX.");
     //5V digital lines for computers
+    /*
     for (int i = 0; i < 5; i++){
       digitalWrite(ENABLES_5VD[i], OUTPUT_ENABLE);
     }
+    */
+    //Enable all 5VD lines besides 5VD_TX, which powers the 360 camera 5V line
+    digitalWrite(ENABLE_MAG_5VD, OUTPUT_ENABLE);
+    digitalWrite(ENABLE_STA_5VD, OUTPUT_ENABLE);
+    digitalWrite(ENABLE_LAS_5VD, OUTPUT_ENABLE);
+    digitalWrite(ENABLE_CAM_5VD, OUTPUT_ENABLE);
     //Set global flag to show that digital outputs are on
     TE_1_Active = true;
   }
   //Check if TE_2 has been reached, if yes, then turn on 5VA and 12V channels
   if((upTime > TE_2) && (!TE_2_Active)){
-    Serial.println("TE_2 reached, powering on 5VA and 12V channels.");
+    Serial.println("TE_2 reached, powering on 5VA and 12V channels, as well as 5VD_TX.");
     //5V active lines for actuators
     digitalWrite(ENABLE_MAG_5VA, OUTPUT_ENABLE);
     digitalWrite(ENABLE_STA_5VA, OUTPUT_ENABLE);
@@ -261,6 +268,9 @@ void loop() {
     digitalWrite(ENABLE_STA_12V, OUTPUT_ENABLE);
     digitalWrite(ENABLE_CAM_12V, OUTPUT_ENABLE);
     //Set global flag to show that actuator outputs are on
-    TE_2_Active = true; 
+    TE_2_Active = true;
+    delay(10000);
+    //Power on 5V line to camera at T+95
+    digitalWrite(ENABLE_TX_5VD, OUTPUT_ENABLE); 
   }
 }

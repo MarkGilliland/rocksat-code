@@ -44,7 +44,7 @@ void requestCommand(){
 
 void setup() {
   // Start serial for debugging, comment out for production software
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // Start I2C for communication to master
   // Join I2C bus as a slave with address 0x02 for Laser board, 0x03 for Static board,
@@ -72,27 +72,34 @@ void setup() {
 
   //Init the stepper object with an initial speed
   mirrorStepper.setSpeed(MAX_STEPPER_SPEED);
+  Serial.print("Static Exp board online!");
 }
 
 void loop() {
   while(millis() < 65000){
     //Do nothing until we reach T+85
   }
+  Serial.print("T+85 reached");
   //Turn on pi camera lights
   turnOnLights();
+  Serial.print("Pi camera lights on");
   while(millis() < 218000){
     //Do nothing until we reach T+238
   }
+  Serial.print("T+238 reached! Control debris launched.");
   launchDebris();
   delay(10000);
+  Serial.print("Static on");
   turnOnStatic();
   delay(5000);
   for(int i = 0; i < 10; i++){
     launchDebris();
+    Serial.print("Debris launched");
     delay(5000);
   }
   digitalWrite(LED_PIN, HIGH);
   turnOffStatic();
+  Serial.print("Static generator powered off");
   while(true){
     //Do nothing, program has completed running
   }
