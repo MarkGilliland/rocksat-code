@@ -1,4 +1,4 @@
-// Boom Control Board code - FINAL FINISHED FOR FLIGHT, 4/29/21
+// Boom Control Board code - FINAL FINISHED FOR FLIGHT, 5/1/21
 // Drives camera boom, controls M LEDs and 360 camera.
 // At least with DFRobot motor, encoder counts are negative for CW and positive for CCW rotation.
 
