@@ -269,8 +269,9 @@ void loop() {
     digitalWrite(ENABLE_CAM_12V, OUTPUT_ENABLE);
     //Set global flag to show that actuator outputs are on
     TE_2_Active = true;
-    delay(20000);
-    //Power on 5V line to camera at T+95
+  }
+  if(upTime > 326000){
+    //Power on 5V line to camera at T+105
     digitalWrite(ENABLE_TX_5VD, OUTPUT_ENABLE); 
   }
 }

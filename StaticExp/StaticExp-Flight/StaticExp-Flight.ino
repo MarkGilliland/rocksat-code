@@ -79,27 +79,27 @@ void loop() {
   while(millis() < 65000){
     //Do nothing until we reach T+85
   }
-  Serial.print("T+85 reached");
+  Serial.println("T+85 reached");
   //Turn on pi camera lights
   turnOnLights();
-  Serial.print("Pi camera lights on");
+  Serial.println("Pi camera lights on");
   while(millis() < 218000){
     //Do nothing until we reach T+238
   }
   Serial.print("T+238 reached! Control debris launched.");
   launchDebris();
   delay(10000);
-  Serial.print("Static on");
+  Serial.println("Static on");
   turnOnStatic();
   delay(5000);
   for(int i = 0; i < 10; i++){
     launchDebris();
-    Serial.print("Debris launched");
+    Serial.println("Debris launched");
     delay(5000);
   }
   digitalWrite(LED_PIN, HIGH);
   turnOffStatic();
-  Serial.print("Static generator powered off");
+  Serial.println("Static generator powered off");
   while(true){
     //Do nothing, program has completed running
   }
