@@ -113,11 +113,11 @@ void loop() {
       delay(1500);
     }
     //Put camera in transfer mode here
-    switchToTransferMode();
+    //switchToTransferMode();
     //Power off camera
-    turnOffCamera();
-    delay(1000);
-    turnOnCamera();
+    //turnOffCamera();
+    //delay(1000);
+    //turnOnCamera();
     //Begin copying photos to Pi
     
     while(millis() < 255000){
